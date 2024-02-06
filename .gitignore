@@ -12,3 +12,6 @@ main.pdf
 *.bcf
 *.run.xml
 .sfdx
+*.synctex(busy)
+*.lot
+*.lof
