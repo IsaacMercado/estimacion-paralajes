@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "*.embeddedhtml": "html",
+        "*.conf": "ssh_config",
+        "plyconfig.json": "jsonc"
+    },
+    "ltex.language": "es"
+}

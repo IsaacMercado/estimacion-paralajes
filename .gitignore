@@ -1,0 +1,14 @@
+venv/
+*.aux
+*.log
+*.out
+*.toc
+main.pdf
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+*.blg
+*.bbl
+*.bcf
+*.run.xml
+.sfdx
