@@ -18,7 +18,9 @@
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage[normalem]{ulem}
-\usepackage[spanish]{babel} 
+\usepackage[spanish]{babel}
+\usepackage[document]{ragged2e}
+
 \selectlanguage{spanish}
 \useunder{\uline}{\ul}{}
 \newcommand{\myparagraph}[1]{\paragraph{#1}\mbox{}\\}
@@ -47,172 +49,144 @@
 \newpage
 
 % Fíguras
-\renewcommand{\listfigurename}{\large{Índice de fíguras}}
-\listoffigures
-\newpage
+% \renewcommand{\listfigurename}{\large{Índice de fíguras}}
+% \listoffigures
+% \newpage
 
 % Tablas
-\renewcommand{\listtablename}{\large{Índice de tablas}}
-\listoftables
-\newpage
+% \renewcommand{\listtablename}{\large{Índice de tablas}}
+% \listoftables
+% \newpage
 
 % Cuerpo
 \pagenumbering{arabic}
 
-\section{\large Título I}
-\noindent \maskCitet{cervantes1999}\\
-En un lugar de la Mancha, de cuyo nombre no quiero acordarme,
-no ha mucho tiempo que vivía un hidalgo de los de lanza en astillero,
-adarga antigua, rocín flaco y galgo corredor.
 
-\subsection{Título II}
-Una olla de algo más vaca que carnero, salpicón las más noches, duelos 
-y quebrantos los sábados, lantejas los viernes, algún palomino de añadidura 
-los domingos, consumían las tres partes de su hacienda.
 
-\subsubsection{Título III}
-El resto della concluían sayo de velarte, calzas de velludo para las 
-fiestas, con sus pantuflos de lo mesmo, y los días de entresemana 
-se honraba con su vellorí de lo más fino.
+% \section{\large Título I}
+% \subsection{Título II}
+% \subsubsection{Título III}
+% \paragraph{Título IV}
+% \myparagraph{Título V}
+% \subparagraph{Título VI}
 
-\paragraph{Título IV}
-Tenía en su casa una ama que pasaba de los cuarenta, y una sobrina 
-que no llegaba a los veinte, y un mozo de campo y plaza, que así 
-ensillaba el rocín como tomaba la podadera.
+\subsection{Planteamiento del Problema}
 
-\myparagraph{Título IV ii}
-Frisaba la edad de nuestro hidalgo con los cincuenta años; 
-era de complexión recia, seco de carnes, enjuto de rostro, gran 
-madrugador y amigo de la caza.
-
-\subparagraph{Título V}
-Quieren decir que tenía el sobrenombre de Quijada, 
-o Quesada, que en esto hay alguna diferencia en los autores 
-que deste caso escriben; aunque por conjeturas verosímiles 
-se deja entender que se llamaba Quijana.
-
-1.	Planteamiento del Problema	
-2.	Objetivos de la Investigación	
-Objetivo general	
-Objetivos específicos	
-3.	Justificación de la investigación	8
-4.	Antecedentes de la Investigación	
-5.	Metodología de la Investigación	15
-5.1 Tipo de investigación	
-5.2 Diseño de la investigación	
-5.3 Fuente de datos	
-5.4 Población y Muestra	
-5.5 Técnicas de Procesamiento y Análisis de la Información	
-5.6 Camino Metodológico	
-6.	Cronograma de Actividades	
-Referencias Bibliográficas	
-
-Planteamiento del problema
-
-La determinación de distancias estelares se presenta como un 
-desafío interesante que puede abarcar tanto la estadística 
-como la astronomía. Este proyecto pretende abordar la 
-complejidad surgida al medir las distancias en el espacio, 
-lo cual representa un problema fundamental para la astronomía, 
-como por ejemplo para la comprensión de la estructura y evolución 
+La determinación de distancias estelares se presenta como un
+desafío interesante que puede abarcar tanto la estadística
+como la astronomía. Este proyecto pretende abordar la
+complejidad surgida al medir las distancias en el espacio,
+lo cual representa un problema fundamental para la astronomía,
+como por ejemplo para la comprensión de la estructura y evolución
 de nuestra galaxia.
 
-Para calcular las distancias estelares, se emplea la paralaje, 
-un ángulo formado por una estrella con la Tierra desde dos puntos 
-diferentes en su órbita. Sin embargo, la medición precisa de la paralaje 
-se ve afectada por diversos errores, como lo sería el movimiento propio 
-de las estrellas y la extinción interestelar. La estadística bayesiana 
-es una herramienta flexible y creativa, ofrece la posibilidad de modelar 
-las relaciones entre variables, teniendo en cuenta factores que pueden 
+Para calcular las distancias estelares, se emplea la paralaje,
+un ángulo formado por una estrella con la Tierra desde dos puntos
+diferentes en su órbita. Sin embargo, la medición precisa de la paralaje
+se ve afectada por diversos errores, como lo sería el movimiento propio
+de las estrellas y la extinción interestelar. La estadística bayesiana
+es una herramienta flexible y creativa, ofrece la posibilidad de modelar
+las relaciones entre variables, teniendo en cuenta factores que pueden
 corregir estos errores.
 
-En lugar de abordar solo la paralaje, este proyecto propone utilizar 
-el diagrama color-magnitud, que relaciona las magnitudes absolutas y 
-luminosidades estelares. La ecuación  m = M + 5*(log10() +1) establece 
-la conexión con la distancia, donde m es la magnitud aparente, M es la 
-magnitud absoluta y d es la distancia. La estadística bayesiana se 
-aplicará para corregir las estimaciones de paralaje, aprovechando 
+En lugar de abordar solo la paralaje, este proyecto propone utilizar
+el diagrama color-magnitud, que relaciona las magnitudes absolutas y
+luminosidades estelares. La ecuación  m = M + 5*(log10() +1) establece
+la conexión con la distancia, donde m es la magnitud aparente, M es la
+magnitud absoluta y d es la distancia. La estadística bayesiana se
+aplicará para corregir las estimaciones de paralaje, aprovechando
 la información adicional proporcionada por el diagrama color-magnitud.
 
-Aunque ya se han explorado enfoques similares en trabajos anteriores, 
-como los de Lauren Anderson, et al (2018) y Zhang, Green, y Rix (2023), 
-este proyecto se distingue por proponer un enfoque completamente bayesiano, 
-similar al presentado por Leistedt y Hogg (2017), y proporcionar documentación 
+Aunque ya se han explorado enfoques similares en trabajos anteriores,
+como los de \maskCitet{Anderson_2017} y \maskCitet{Zhang_2023},
+este proyecto se distingue por proponer un enfoque completamente bayesiano,
+similar al presentado por \maskCitet{Leistedt_2017}, y proporcionar documentación
 específica de los casos analizados.
 
 Hipótesis
 
-La implementación de un modelo bayesiano jerárquico usando el diagrama 
-color-magnitud puede mejorar significativamente la precisión de las 
+La implementación de un modelo bayesiano jerárquico usando el diagrama
+color-magnitud puede mejorar significativamente la precisión de las
 estimaciones de distancias estelares.
 
-Objetivos mínimos.
+\subsection{Objetivos de la Investigación}
 
-Desarrollo de un modelo bayesiano jerárquico usando el diagrama color-magnitud para la estimación de distancias estelares.
-Evaluar la precisión del modelo adaptado.
-Documentar la metodología y el modelado estadístico.
+\subsubsection{Objetivo general}
 
-Justificación de la investigación
+\subsubsection{Objetivos específicos}
 
-Este proyecto sobrepasa los límites de la física y se establece como una 
-aportación relevante al ámbito de la estadística. Pues al aplicar y adaptar 
-métodos bayesianos para corregir errores en mediciones astronómicas, 
-se busca no solo validar la robustez de esta metodología sino también 
+\begin{itemize}
+    \item Desarrollo de un modelo bayesiano jerárquico usando el diagrama color-magnitud para la estimación de distancias estelares.
+    \item Evaluar la precisión del modelo adaptado.
+    \item Documentar la metodología y el modelado estadístico.
+\end{itemize}
+
+\subsection{Justificación de la investigación}
+
+Este proyecto sobrepasa los límites de la física y se establece como una
+aportación relevante al ámbito de la estadística. Pues al aplicar y adaptar
+métodos bayesianos para corregir errores en mediciones astronómicas,
+se busca no solo validar la robustez de esta metodología, sino también
 explorar su flexibilidad y creatividad en un contexto estadístico.
 
-La relevancia de este enfoque radica en su capacidad para impactar diversas 
-disciplinas, incluida la geografía y la ingeniería, al proporcionar nuevas 
-perspectivas sobre la corrección de mediciones en entornos no terrestres. 
-Además, al ser un proyecto de licenciatura, se enfatiza la oportunidad de 
-contribuir a la comunidad académica mediante la aplicación de la estadística 
+La relevancia de este enfoque radica en su capacidad para impactar diversas
+disciplinas, incluida la geografía y la ingeniería, al proporcionar nuevas
+perspectivas sobre la corrección de mediciones en entornos no terrestres.
+Además, al ser un proyecto de licenciatura, se enfatiza la oportunidad de
+contribuir a la comunidad académica mediante la aplicación de la estadística
 bayesiana en un contexto específico.
 
-La importancia de explorar y proponer nuevos modelos estadísticos se destaca, 
-ya que la astronomía, en constante evolución, presenta continuamente nuevos 
-desafíos y oportunidades para el análisis de datos. En este sentido, se hace 
-especial mención a la disponibilidad de datos recientes de misiones como Gaia 
-de la Agencia Espacial Europea, lo que proporciona una base sólida para la 
+La importancia de explorar y proponer nuevos modelos estadísticos se destaca,
+ya que la astronomía, en constante evolución, presenta continuamente nuevos
+desafíos y oportunidades para el análisis de datos. En este sentido, se hace
+especial mención a la disponibilidad de datos recientes de misiones como Gaia
+de la Agencia Espacial Europea, lo que proporciona una base sólida para la
 implementación y evaluación de modelos bayesianos en el contexto estadístico.
 
-Metodología
+\subsection{Antecedentes de la Investigación}
+\subsection{Metodología de la Investigación}
 
-En función de lo anteriormente explicado según Cox y Donnaly (2011) podemos 
-clasificar este trabajo como un estudio observacional. Y se pueden abarcar 
-varios aspectos como la formulación teórica y la revisión bibliográfica al 
-problema de estimación de paralajes. En líneas generales, la investigación 
-documentará y propondrá un modelo bayesiano jerárquico para optimizar las 
-estimaciones de distancia a partir de los datos de Gaia DR3 mediante el 
+En función de lo anteriormente explicado según \maskCitet{Cox_Donnelly_2011} podemos
+clasificar este trabajo como un estudio observacional. Y se pueden abarcar
+varios aspectos como la formulación teórica y la revisión bibliográfica al
+problema de estimación de paralajes. En líneas generales, la investigación
+documentará y propondrá un modelo bayesiano jerárquico para optimizar las
+estimaciones de distancia a partir de los datos de Gaia DR3 mediante el
 empleo del diagrama color-magnitud.
 
 Siendo más específico se plantea los siguientes pasos:
 
-Revisión bibliográfica sobre los modelos jerárquicos bayesianos y otros métodos para la estimación de distancias estelares.
-Desarrollo e implementación de un modelo jerárquico bayesiano para la estimación de distancias estelares.
+\begin{itemize}
+    \item Revisión bibliográfica sobre los modelos jerárquicos bayesianos y otros métodos para la estimación de distancias estelares.
+    \item Desarrollo e implementación de un modelo jerárquico bayesiano para la estimación de distancias estelares.
+    \item Validación del modelo.
+    \item Discusión de las implicaciones.
+\end{itemize}
 
-Validación del modelo.
-
-Discusión de las implicaciones.
-
-Referencias bibliográficas
-% l Leistedt, B., & Hogg, D. W. (2017). Hierarchical probabilistic inference of the color–magnitude diagram and shrinkage of stellar distance uncertainties. The Astronomical Journal, 154(6), 222.
-% l Gaia Collaboration (2016). Gaia data release 1. Astronomy & Astrophysics, 595, A1.
-% l Hogg, D. W., & Foreman-Mackey, D. (2018). Data analysis of astronomical objects: A bayesian approach (2nd ed.). Cambridge University Press.
-% l Bailer-Jones, C. A. (2015). Estimating distances from parallaxes. Publications of the Astronomical Society of the Pacific, 127(956), 9942
-% l Lauren Anderson, et al (2018). Improving Gaia Parallax Precision with a Data-driven Model of Stars. The Astronomical Journal. AJ 156 145.
-% l Edenhofer, G., Zucker, C., Frank, P., Saydjari, A.K., Speagle, J.S., Finkbeiner, D.P., & Enßlin, T. (2023). A Parsec-Scale Galactic 3D Dust Map out to 1.25 kpc from the Sun.
+\subsubsection{Tipo de investigación}
+\subsubsection{Diseño de la investigación}
+\subsubsection{Fuente de datos}
+\subsubsection{Población y Muestra}
+\subsubsection{Técnicas de Procesamiento y Análisis de la Información}
 
 Recursos necesarios para llevar a efecto la investigación.
 
-Acceso a la base de datos de Gaia DR3.
-Herramientas de programación para el desarrollo del modelo bayesiano.
-Recursos computacionales para el análisis de datos.
-Bibliografía relevante sobre modelos bayesianos y técnicas de análisis de datos astronómicos.
-Como nota, todos estos recursos están disponibles de forma gratuita vía Internet.
+\begin{itemize}
+    \item Acceso a la base de datos de Gaia DR3.
+    \item Herramientas de programación para el desarrollo del modelo bayesiano.
+    \item Recursos computacionales para el análisis de datos.
+    \item Bibliografía relevante sobre modelos bayesianos y técnicas de análisis de datos astronómicos.    
+\end{itemize}
+
+\textbf{Como nota}, todos estos recursos están disponibles de forma gratuita vía Internet.
+
+\subsubsection{Camino Metodológico}
+\subsection{Cronograma de Actividades}
 
 \newpage
 % Referencias
-\renewcommand\refname{\large\textbf{Referencias bibliográficas}}
-% \bibliography{bibliography.bib}
+\renewcommand\refname{\large\textbf{Referencias Bibliográficas}}
+\bibliography{bibliography}
 
 \end{document}
 
