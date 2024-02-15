@@ -1,32 +1,3 @@
-%%
-%% This is file `apa7.cls',
-%% generated with the docstrip utility.
-%%
-%% The original source files were:
-%%
-%% apa7.dtx  (with options: `class')
-%% ----------------------------------------------------------------------
-%% 
-%% apa7 - A LaTeX class for formatting documents in compliance with the
-%% American Psychological Association's Publication Manual, 7th edition
-%% 
-%% Copyright (C) 2021 by Daniel A. Weiss <daniel.weiss.led at gmail.com>
-%% 
-%% This work may be distributed and/or modified under the
-%% conditions of the LaTeX Project Public License (LPPL), either
-%% version 1.3c of this license or (at your option) any later
-%% version.  The latest version of this license is in the file:
-%% 
-%% http://www.latex-project.org/lppl.txt
-%% 
-%% Users may freely modify these files without permission, as long as the
-%% copyright line and this statement are maintained intact.
-%% 
-%% This work is not endorsed by, affiliated with, or probably even known
-%% by, the American Psychological Association.
-%% 
-%% ----------------------------------------------------------------------
-%% 
 \ProvidesClass{apa7}[2021/11/21 v2.14 APA formatting (7th edition)]
 \NeedsTeXFormat{LaTeX2e}
 
@@ -66,7 +37,6 @@
 \DeclareOption{fignum}{%
   \@ifundefined{def@man}{}{\def\fig@num{\relax}}
 }
-
 
 \DeclareOption{longtable}{%
   \def\long@table{\relax}
@@ -234,8 +204,6 @@
   \RequirePackage{draftwatermark}
   \SetWatermarkText{DRAFT}
 }
-
-
 
 \long\def\ifapamodeman#1#2{\@ifundefined{def@man}{#2}{#1}}
 \long\def\ifapamodejou#1#2{\@ifundefined{def@jou}{#2}{#1}}
@@ -1250,13 +1218,15 @@
   \check@author
 
   \begin{center}
+    \includegraphics[width=3cm]{logo_ula.pdf}
 
+    \displayaffiliations
 
     \vspace*{4\baselineskip}
     \textbf\@title%
     \ifapamodeman{%
       \@ifundefined{def@noextraspace}{%
-        \vspace{\baselineskip}\\
+        \vspace{2\baselineskip}\\
       }{\\}
     }{%
       \vspace{\baselineskip}\\
@@ -1264,8 +1234,7 @@
     \@ifundefined{def@stu}{ %Professional manuscript
     \@ifundefined{apaSeven@maskauthoridentity}{%  BDB
 
-      \displayauthors \\
-      \displayaffiliations
+      \displayauthors
 
       \@ifundefined{@note}
       {\vspace*{\baselineskip} }
@@ -1290,12 +1259,12 @@
   }}{% Student Manuscript
   \@ifundefined{apaSeven@maskauthoridentity}{%  BDB
     \displayauthors \\
-
-    \displayaffiliations
   }{%  mask author identity -- show nothing in the author or affiliations space
   }
-  \@course \\
   \@professor \\
+  \vspace*{1\baselineskip}
+  \@course \\
+  \vspace*{1\baselineskip}
   \@duedate \\
 
   \@ifundefined{apaSeven@maskauthoridentity}{%  BDB
@@ -1707,48 +1676,3 @@
   %
   \def\bibliographystyle#1{\ClassWarning{apa7}{\string\bibliographystyle\space
       command ignored}}}
-
-
-%% 
-%% Copyright (C) 2021 by Daniel A. Weiss <daniel.weiss.led at gmail.com>
-%% 
-%% This work may be distributed and/or modified under the
-%% conditions of the LaTeX Project Public License (LPPL), either
-%% version 1.3c of this license or (at your option) any later
-%% version.  The latest version of this license is in the file:
-%% 
-%% http://www.latex-project.org/lppl.txt
-%% 
-%% Users may freely modify these files without permission, as long as the
-%% copyright line and this statement are maintained intact.
-%% 
-%% This work is not endorsed by, affiliated with, or probably even known
-%% by, the American Psychological Association.
-%% 
-%% This work is "maintained" (as per LPPL maintenance status) by
-%% Daniel A. Weiss.
-%% 
-%% This work consists of the file  apa7.dtx
-%% and the derived files           apa7.ins,
-%%                                 apa7.cls,
-%%                                 apa7.pdf,
-%%                                 README,
-%%                                 APA7american.txt,
-%%                                 APA7british.txt,
-%%                                 APA7dutch.txt,
-%%                                 APA7english.txt,
-%%                                 APA7french.txt,
-%%                                 APA7german.txt,
-%%                                 APA7ngerman.txt,
-%%                                 APA7greek.txt,
-%%                                 APA7czech.txt,
-%%                                 APA7turkish.txt,
-%%                                 APA7spanish.txt,
-%%                                 APA7endfloat.cfg,
-%%                                 Figure1.pdf,
-%%                                 shortsample.tex,
-%%                                 longsample.tex, and
-%%                                 bibliography.bib.
-%% 
-%%
-%% End of file `apa7.cls'.

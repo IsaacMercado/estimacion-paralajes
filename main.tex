@@ -1,43 +1,47 @@
-% PLANTILLA APA7
-% Creado por: Isaac Palma Medina
-% Última actualización: 25/07/2021
-% @COPYLEFT
-
-% Fuentes consultadas (todos los derechos reservados):  
-% Normas APA. (2019). Guía Normas APA. https://normas-apa.org/wp-content/uploads/Guia-Normas-APA-7ma-edicion.pdf
-% Tecnológico de Costa Rica [Richmond]. (2020, 16 abril). LaTeX desde cero con Overleaf (1 de 3) [Vídeo]. YouTube. https://www.youtube.com/watch?v=kM1KvHVuaTY Weiss, D. (2021). 
-% Formatting documents in APA style (7th Edition) with the apa7 LATEX class. https://ctan.math.washington.edu/tex-archive/macros/latex/contrib/apa7/apa7.pdf @COPYLEFT
-
-%+-+-+-+-++-+-+-+-+-+-+-+-+-++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-++-+-+-+-+-+-+-+-+-+
-
-% Preámbulo
-\documentclass[stu, 12pt, letterpaper, donotrepeattitle, floatsintext, natbib]{apa7}
+\documentclass[stu, 12pt, letterpaper, donotrepeattitle, floatsintext, natbib]{apa7_ula}
 \usepackage[utf8]{inputenc}
 \usepackage{comment}
 \usepackage{marvosym}
 \usepackage{graphicx}
 \usepackage{float}
+\usepackage{natbib}
+\usepackage{pgfgantt}
+\usepackage{multirow}
 \usepackage[normalem]{ulem}
 \usepackage[spanish]{babel}
 \usepackage[document]{ragged2e}
 
 \selectlanguage{spanish}
+
+\setlength{\parindent}{1.5cm}
+
 \useunder{\uline}{\ul}{}
-\newcommand{\myparagraph}[1]{\paragraph{#1}\mbox{}\\}
 
 % Portada
 \thispagestyle{empty}
-\title{\Large Título del documento}
-\author{Ing. Luis Mercado} % (autores separados, consultar al docente)
-% Manera oficial de colocar los autores:
-%\author{Autor(a) I, Autor(a) II, Autor(a) III, Autor(a) X}
-\authorsaffiliations{Universidad de los Andes}
-\course{Código del curso: Nombre del curso}
-\professor{Prof. Francisco Palm}
-\duedate{Febrero, 2024}
+\title{
+    \uppercase{\large Modelo Bayesiano Jerárquico para Mejorar las 
+    Estimaciones de Distancia Estelar a través del 
+    Diagrama Color-Magnitud}
+}
+\author{Autor: Ing. Luis Mercado}
+\professor{Tutor: Prof. Francisco Palm}
+\authorsaffiliations{
+    \uppercase{Universidad de los Andes} \\
+    \uppercase{Facultad de ciencias económicas y sociales} \\
+    \uppercase{Escuela de estadística}
+}
+\course{
+    \uppercase{Propuesta de trabajo de grado} \\
+    Para optar al título de Licenciado en Estadística
+}
+\duedate{
+    \uppercase{Mérida, Venezuela} \\ 
+    Febrero, 2024
+}
+
 \begin{document}
 \maketitle
-
 
 % Índices
 \pagenumbering{roman}
@@ -61,24 +65,22 @@
 % Cuerpo
 \pagenumbering{arabic}
 
-
-
 % \section{\large Título I}
 % \subsection{Título II}
 % \subsubsection{Título III}
 % \paragraph{Título IV}
-% \myparagraph{Título V}
 % \subparagraph{Título VI}
 
 \subsection{Planteamiento del Problema}
 
-La determinación de distancias estelares se presenta como un
-desafío interesante que puede abarcar tanto la estadística
-como la astronomía. Este proyecto pretende abordar la
-complejidad surgida al medir las distancias en el espacio,
-lo cual representa un problema fundamental para la astronomía,
-como por ejemplo para la comprensión de la estructura y evolución
-de nuestra galaxia.
+\justifying \parindent=1.5cm
+
+La determinación de distancias estelares se presenta como un desafío
+interesante que puede abarcar tanto la estadística como la astronomía.
+Este proyecto pretende abordar la complejidad surgida al medir las
+distancias en el espacio, lo cual representa un problema fundamental
+para la astronomía, como por ejemplo para la comprensión de la estructura
+y evolución de nuestra galaxia.
 
 Para calcular las distancias estelares, se emplea la paralaje,
 un ángulo formado por una estrella con la Tierra desde dos puntos
@@ -91,33 +93,36 @@ corregir estos errores.
 
 En lugar de abordar solo la paralaje, este proyecto propone utilizar
 el diagrama color-magnitud, que relaciona las magnitudes absolutas y
-luminosidades estelares. La ecuación $\displaystyle M=m+5\left(\log_{10}p+1\right)$ 
+luminosidades estelares. La ecuación $\displaystyle M=m+5\left(\log_{10}p+1\right)$
 establece la conexión con la distancia, donde $m$ es la magnitud aparente, $M$ es la
 magnitud absoluta y $d$ es la distancia. La estadística bayesiana se
 aplicará para corregir las estimaciones de paralaje, aprovechando
 la información adicional proporcionada por el diagrama color-magnitud.
 
 Aunque ya se han explorado enfoques similares en trabajos anteriores,
-como los de \maskCitet{Anderson_2017} y \maskCitet{Zhang_2023},
+como los de \citet{Anderson_2017} y \citet{Zhang_2023},
 este proyecto se distingue por proponer un enfoque completamente bayesiano,
-similar al presentado por \maskCitet{Leistedt_2017}, y proporcionar documentación
+similar al presentado por \citet{Leistedt_2017}, y proporcionar documentación
 específica de los casos analizados.
 
-Hipótesis
-
-La implementación de un modelo bayesiano jerárquico usando el diagrama
-color-magnitud puede mejorar significativamente la precisión de las
-estimaciones de distancias estelares.
+% Hipótesis:
+% La implementación de un modelo bayesiano jerárquico usando el diagrama
+% color-magnitud puede mejorar significativamente la precisión de las
+% estimaciones de distancias estelares.
 
 \subsection{Objetivos de la Investigación}
 
 \subsubsection{Objetivo general}
 
+Desarrollo de un modelo bayesiano jerárquico usando el
+diagrama color-magnitud para la estimación de distancias estelares.
+
 \subsubsection{Objetivos específicos}
 
 \begin{itemize}
-    \item Desarrollo de un modelo bayesiano jerárquico usando el diagrama color-magnitud para la estimación de distancias estelares.
-    \item Evaluar la precisión del modelo adaptado.
+    \item Revisar la literatura sobre modelos bayesianos para la estimación de distancias estelares.
+    \item Desarrollar un modelo bayesiano jerárquico para la estimación de distancias estelares.
+    \item Evaluar la precisión del modelo adaptado a los datos de Gaia DR3.
     \item Documentar la metodología y el modelado estadístico.
 \end{itemize}
 
@@ -145,44 +150,156 @@ implementación y evaluación de modelos bayesianos en el contexto estadístico.
 
 \subsection{Antecedentes de la Investigación}
 
+Actualmente, contamos con una amplia gama de modelos estadísticos para
+estimar distancias estelares, pero pocas de estas técnicas usan métodos bayesianos,
+motivo por el cual se encuentran pocos trabajos que aborden este tema en
+la comunidad internacional, y menos aún en la comunidad hispanohablante. Sin embargo,
+se pueden encontrar algunos como lo son
+\citet{Leistedt_2017}, \citet{Anderson_2017} y \citet{Zhang_2023}.
+
+El trabajo más acorde a la propuesta de este proyecto es el de \citet{Leistedt_2017},
+quienes presentan un modelo bayesiano jerárquico para la estimación de distancias
+estelares, utilizando mediciones de paralaje y magnitudes aparentes. En este trabajo
+se usaron datos de TGAS, que son datos combinados de la misión Gaia y el catálogo de
+estrellas de Tycho-2, dando como resultado una mejora significativa en la precisión
+de las estimaciones de distancias estelares.
+
+Otro trabajo con un enfoque similar es el de \citet{Anderson_2017}, quienes resuelven
+el problema de la estimación de distancias estelares mediante el uso de un modelo
+bayesiano empírico con el método de devolución extrema XD, también usando TGAS con buenos
+resultados, pero en la actualidad se reconoce que los métodos empíricos no son tan
+robustos como los modelos jerárquicos completamente bayesianos, aunque si mucho más
+rápidos.
+
+Por último, el trabajo de \citet{Zhang_2023}, que no solo provee correcciones de las
+de distancias estelares, sino que también estimaciones de masas y edades,
+utilizando un enfoque similar a \citet{Anderson_2017}, es decir, usan un
+modelo bayesiano empírico, usando datos de Gaia DR2. Por lo que es
+en la actualidad el trabajo más actualizado en este campo.
+
 \subsection{Metodología de la Investigación}
 
-En función de lo anteriormente explicado según \maskCitet{Cox_Donnelly_2011} podemos
-clasificar este trabajo como un estudio observacional. Y se pueden abarcar
+\subsubsection{Tipo de investigación}
+
+En función de lo anteriormente explicado según \citet{Cox_Donnelly_2011} podemos
+clasificar este trabajo como un estudio observacional, puesto que no tenemos
+control de las variables de estudio. Y va a abarcar
 varios aspectos como la formulación teórica y la revisión bibliográfica al
 problema de estimación de paralajes. En líneas generales, la investigación
 documentará y propondrá un modelo bayesiano jerárquico para optimizar las
 estimaciones de distancia a partir de los datos de Gaia DR3 mediante el
 empleo del diagrama color-magnitud.
 
-Siendo más específico se plantea los siguientes pasos:
+\subsubsection{Diseño de la investigación}
+
+Referente al diseño de la investigación, se plantea usar el flujo de trabajo
+bayesiano propuesto por \citet{gelman2020bayesian}, que especifica los pasos
+o mejor dicho la ruta a seguir para el desarrollo de un modelo
+bayesiano.
+
+\subsubsection{Fuente de datos}
+
+Este estudio se basa en la información recopilada por la misión
+Gaia de la Agencia Espacial Europea. La misión Gaia es un proyecto
+de cartografía estelar que tiene como objetivo medir las posiciones,
+movimientos y propiedades físicas de más de mil millones de estrellas
+en la Vía Láctea y más allá. La tercera versión de datos de Gaia (Gaia DR3)
+proporciona mediciones precisas de paralaje y magnitudes aparentes para más
+de mil millones de estrellas, para más información puede ver \citet{Vallenari2022GaiaDR}.
+
+También se considerarán datos de otras fuentes, como el catálogo de estrellas
+de Hipparcos y el catálogo de estrellas de Tycho-2.
+
+\subsubsection{Población y Muestra}
+
+Para motivos de este estudio, se considerará una muestra completamente
+aleatoria de estrellas de la base de datos de Gaia DR3.
+También hay que tener en cuenta que como se
+está elaborando un estudio bayesiano, siguiendo las recomendaciones de
+\citet{gelman2020bayesian} se utilizará las simulaciones de un modelo teórico
+dispuesto por el mismo proyecto Gaia, para la validación del modelo.
+
+\subsubsection{Técnicas de Procesamiento y Análisis de la Información}
+
+En este trabajo se plantea la estimación de un número $N$ de
+estrellas tomando en cuenta su relación con el diagrama color-magnitud
+por lo tanto se plantea el uso de un modelo bayesiano jerárquico.
+
+Siendo más específicos, se tratará de seguir el enfoque de \citet{Leistedt_2017}
+usando un modelo generativo explicado por \citet[p, 11]{gelman2020bayesian}
+que permita definir una distribución prior para la distancia, otra
+para el diagrama color-magnitud y en la función de verosimilitud que
+explique la relación de los datos con los priors.
+
+Ahora bien, para la extracción de datos se usará el lenguaje de programación python
+con la librería astroquery que me permite extraer los datos y los modelos se definirán
+usando la librería pymc, la cual está especializada y optimizada para el proceso
+de desarrollo, validación y selección de modelos bayesianos, contando con un gran
+cantidad de ejemplos y tutoriales disponibles.
+
+\subsubsection{Camino Metodológico}
+
+A grandes rasgos la investigación requerirá los siguientes pasos:
 
 \begin{itemize}
     \item Revisión bibliográfica sobre los modelos jerárquicos bayesianos y otros métodos para la estimación de distancias estelares.
     \item Desarrollo e implementación de un modelo jerárquico bayesiano para la estimación de distancias estelares.
     \item Validación del modelo.
-    \item Discusión de las implicaciones.
+    \item Documentación.
 \end{itemize}
 
-\subsubsection{Tipo de investigación}
-\subsubsection{Diseño de la investigación}
-\subsubsection{Fuente de datos}
-\subsubsection{Población y Muestra}
-\subsubsection{Técnicas de Procesamiento y Análisis de la Información}
+Se debe tener en cuenta que según la descripción de
+\citet{gelman2020bayesian}, el desarrollo e implementación de un
+modelo jerárquico bayesiano es un proceso iterativo que se empieza
+con un modelo inicial simple y luego poco a poco se van agregando
+variaciones y/o correcciones tratando de encontrar el modelo
+adecuado para el problema planteado.
 
-Recursos necesarios para llevar a efecto la investigación.
-
-\begin{itemize}
-    \item Acceso a la base de datos de Gaia DR3.
-    \item Herramientas de programación para el desarrollo del modelo bayesiano.
-    \item Recursos computacionales para el análisis de datos.
-    \item Bibliografía relevante sobre modelos bayesianos y técnicas de análisis de datos astronómicos.    
-\end{itemize}
-
-\textbf{Como nota}, todos estos recursos están disponibles de forma gratuita vía Internet.
-
-\subsubsection{Camino Metodológico}
 \subsection{Cronograma de Actividades}
+
+\begin{ganttchart}[
+        vgrid,
+        hgrid,
+        % bar label font=\mdseries\small\color{black!70},
+        y unit title=1cm,
+        y unit chart=0.8cm,
+        bar label node/.append style={left=2cm},
+        bar label font=\raggedright\mdseries\small,
+        group label node/.append style={left=.6cm}
+    ]{1}{12}
+    \gantttitle{2024}{12} \\
+    \gantttitle{Enero}{4} \gantttitle{Febrero}{4} \gantttitle{Marzo}{4} \\
+    \gantttitlelist{1,...,4}{1} \gantttitlelist{1,...,4}{1} \gantttitlelist{1,...,4}{1} \\
+
+    \ganttgroup{Revisión bibliográfica}{1}{2} \\
+    \ganttbar{Cálculo de distancias estelares}{1}{2} \\
+    \ganttbar{Modelos bayesianos en astronomía}{1}{2} \\
+
+    \ganttgroup{Formulación del anteproyecto}{3}{4} \\
+    \ganttbar{Planteamiento del problema}{3}{4} \\
+    \ganttbar{Objetivos}{3}{4} \\
+    \ganttbar{Justificación}{3}{4} \\
+    \ganttbar{Antecedentes}{3}{4} \\
+    \ganttbar{Marco metodológico}{3}{4} \\
+
+    \ganttgroup{Desarrollo del modelo bayesiano}{5}{7} \\
+    \ganttbar{Definición del modelo inicial}{5}{7} \\
+    \ganttbar{Ajuste (Fit) del modelo}{5}{7} \\
+    \ganttbar{Validación del modelo}{5}{7} \\
+    \ganttbar{Corrección del modelo}{5}{7} \\
+
+    \ganttgroup{Redacción del proyecto de investigación}{8}{9} \\
+    \ganttbar{Marco teórico}{8}{9} \\
+    \ganttbar{Análisis e interpretación de resultados}{8}{9} \\
+    \ganttbar{Conclusiones y recomendaciones}{8}{9} \\
+
+    \ganttgroup{Presentación y revisión}{10}{12} \\
+    \ganttbar{Revisión del proyecto con el tutor}{10}{10} \\
+    \ganttbar{Presentación de informe final}{11}{11} \\
+    \ganttbar{Exposición de los resultados}{12}{12}
+\end{ganttchart}
+
+
 
 \newpage
 % Referencias
