@@ -12,3 +12,5 @@ jax[cpu]==0.4.26
 numba==0.59.1
 seaborn==0.13.2
 jupyterlab==4.1.6
+astroquery[all]==0.4.7
+jupytext==1.16.2

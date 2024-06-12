@@ -1,9 +1,11 @@
+.venv
 venv/
+__pycache__/
 *.aux
 *.log
 *.out
 *.toc
-main.pdf
+reports/*.pdf
 *.synctex.gz
 *.fdb_latexmk
 *.fls

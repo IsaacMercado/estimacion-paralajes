@@ -1218,7 +1218,7 @@
   \check@author
 
   \begin{center}
-    \includegraphics[width=3cm]{logo_ula.pdf}
+    \includegraphics[width=3cm]{figures/logo_ula.pdf}
 
     \displayaffiliations
 
