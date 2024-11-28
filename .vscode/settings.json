@@ -4,5 +4,6 @@
         "*.conf": "ssh_config",
         "plyconfig.json": "jsonc"
     },
-    "ltex.language": "es"
+    "latex-workshop.formatting.latex": "latexindent",
+    "ltex.language": "es",
 }

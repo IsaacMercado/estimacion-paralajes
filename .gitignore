@@ -17,3 +17,5 @@ reports/*.pdf
 *.synctex(busy)
 *.lot
 *.lof
+data/raw/*.vot
+data/raw/*.csv.gz
