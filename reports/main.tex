@@ -265,6 +265,15 @@ sus limitaciones. Este trabajo también fundamenta la necesidad de
 adoptar un enfoque completamente bayesiano y proporciona recomendaciones 
 prácticas para el uso de los datos de Gaia.
 
+Entre estos desarrollos y el enfoque jerárquico completo se ubican los
+trabajos de \citet{Astraatmadja_BailerJones_2016a} y
+\citet{Astraatmadja_BailerJones_2016b}, quienes evalúan el desempeño
+de estimadores bayesianos de distancia bajo distintos priors y aplican
+estos enfoques a millones de estrellas de Gaia DR1. Estos antecedentes
+son relevantes porque muestran que la mejora de las estimaciones no
+depende solo de abandonar la inversión directa, sino también de cómo se
+estructura la información previa sobre la población estelar.
+
 El antecedente más directamente vinculado a esta investigación es 
 el de \citet{Leistedt_2017}, quienes presentan un modelo bayesiano 
 jerárquico para la estimación de distancias estelares que aprende 
@@ -426,7 +435,8 @@ La extinción depende de la distancia y de la dirección de
 observación, y su corrección es necesaria para ubicar 
 correctamente a una estrella en el CMD. Para este proyecto, la 
 corrección de extinción se realizará mediante mapas tridimensionales 
-de polvo existentes, como el de \citet{edenhofer2023parsecscale}.
+de polvo existentes, como los de \citet{Green_2019} y
+\citet{edenhofer2023parsecscale}.
 
 % TODO-FIGURA: Figura recomendable de propuesta.
 % Efecto conceptual de la extinción sobre el CMD.
@@ -466,7 +476,9 @@ las propiedades estadísticas del catálogo real --- incluyendo la
 función de selección, el ruido observacional y los errores 
 sistemáticos --- pero donde las propiedades intrínsecas de cada 
 estrella (distancia verdadera, magnitud absoluta, color) son 
-conocidas.
+conocidas. Esta dimensión de completitud y selección es importante,
+puesto que la inferencia sobre catálogos Gaia depende también de la
+función de selección observacional \citep{Everall_Boubert_2021}.
 
 % TODO-FIGURA: Figura recomendable de propuesta.
 % Esquema del papel de GeDR3mock en el flujo de trabajo.
@@ -851,7 +863,35 @@ de las trazas.
 \subsection{El Modelo Jerárquico del Diagrama Color-Magnitud}
 
 Esta sección describe la formulación del modelo que se pretende 
-desarrollar, basado en el trabajo de \citet{Leistedt_2017}.
+desarrollar, basado en el trabajo de \citet{Leistedt_2017} pero
+adaptado a una familia finita de modelos semiadaptativos. La idea
+central es conservar la interpretabilidad del CMD en el espacio
+magnitud-color, introducir pesos de mezcla flexibles y permitir una
+adaptación limitada de la dispersión de los componentes, sin pasar a
+mezclas no paramétricas ni a modelos con centros completamente libres.
+
+\subsubsection{Notación probabilística y forma generativa}
+
+Se utilizará la siguiente convención de notación a lo largo del trabajo:
+las cantidades observadas se denotan con sombrero
+($\hat{\varpi}_k$, $\hat{m}_k$, $\hat{C}_k$), las variables latentes
+individuales sin sombrero ($r_k$, $M_k$, $C_k$), y los hiperparámetros
+poblacionales en negrita o con letras griegas
+($\mathbf{f}$, $\alpha$, $\lambda_M$, $\lambda_C$). La expresión
+$x \sim P(\cdot)$ se interpreta como ``la variable $x$ es generada a
+partir de la distribución $P$'', mientras que
+$y \mid x \sim P(\cdot)$ indica que $y$ se genera condicionalmente a
+$x$. Esta es la misma lógica que emplean los lenguajes de programación
+probabilística: primero se especifica el proceso generativo y luego se
+obtiene la posterior al condicionar en los datos observados.
+
+En consecuencia, cada modelo se describirá de tres maneras
+complementarias: (i) en forma probabilística, mediante priors,
+verosimilitudes e hiperpriors; (ii) en forma generativa, como una
+secuencia de variables aleatorias que producen las observaciones; y
+(iii) en forma gráfica, mediante diagramas de placas cuando sea útil.
+Esta triple descripción busca que la formulación estadística sea
+directamente traducible a una implementación en PyMC o Stan.
 
 \subsubsection{Modelo generativo}
 El modelo parte de la premisa de que cada estrella $k$ posee 
@@ -875,44 +915,108 @@ como gaussianas centradas en el valor verdadero:
     \sigma_{C,k}^2\right) \label{eq:lik_color}
 \end{align}
 donde $\sigma_{\varpi,k}$, $\sigma_{m,k}$ y $\sigma_{C,k}$ son las 
-incertidumbres observacionales reportadas por Gaia. Se asume que las 
-magnitudes y colores han sido previamente corregidos por extinción 
-interestelar (usando los mapas de \citealt{edenhofer2023parsecscale}), 
-por lo que el término $A_\lambda$ de la 
-Ecuación~\ref{eq:distmod_ext} no aparece explícitamente en la 
-verosimilitud. Asimismo, la paralaje observada puede presentar un 
-sesgo sistemático en su punto cero 
-\citep[$\sim$\!$-17$ $\mu$as en promedio;][]{Lindegren_2021}; en 
-la práctica, este sesgo se corrige restándolo de $\hat{\varpi}_k$ 
-antes de la inferencia.
+incertidumbres observacionales. En el caso fotométrico, estas no se
+tomarán como ausentes: se derivarán a partir de los fluxes reportados
+por Gaia. En particular, si $\hat{F}_{G,k}$ denota el flux observado en
+la banda $G$ y $\sigma_{F_G,k}$ su incertidumbre, se utilizará la
+aproximación de primer orden
+\begin{equation}
+    \sigma_{m,k} \approx \frac{2.5}{\ln 10}
+    \frac{\sigma_{F_G,k}}{\hat{F}_{G,k}},
+    \label{eq:sigma_mag_flux}
+\end{equation}
+y, para el color $\hat{C}_k = \hat{m}_{\mathrm{BP},k} -
+\hat{m}_{\mathrm{RP},k}$,
+\begin{equation}
+    \sigma_{C,k}^2 \approx
+    \left(\frac{2.5}{\ln 10}
+    \frac{\sigma_{F_{\mathrm{BP}},k}}{\hat{F}_{\mathrm{BP},k}}\right)^2 +
+    \left(\frac{2.5}{\ln 10}
+    \frac{\sigma_{F_{\mathrm{RP}},k}}{\hat{F}_{\mathrm{RP},k}}\right)^2,
+    \label{eq:sigma_color_flux}
+\end{equation}
+ignorando covarianzas fotométricas de orden superior. Esta es una
+linealización local de la transformación no lineal flux$\rightarrow$
+magnitud, análoga al método delta en estadística aplicada
+\citep{Cox_Donnelly_2011}. Por tanto, no reproduce de forma exacta la
+asimetría que induce el logaritmo sobre la distribución de errores en
+magnitud; se adopta como aproximación de primer orden válida para
+fuentes con señal-ruido fotométrica suficientemente alta. Esta decisión
+es coherente con la precisión fotométrica reportada para Gaia y con la
+aproximación empleada en el enfoque fotogeométrico de
+\citet{2021AJ....161..147B}, donde las incertidumbres en $G$ son de
+orden milimagnitud y las del color suelen ser pequeñas para la mayoría
+de las fuentes de interés.
+
+Una formulación más fiel al proceso observacional consistiría en
+modelar directamente los fluxes observados; por ejemplo,
+\begin{align}
+    \hat{F}_{G,k} \mid F_{G,k} &\sim
+        \mathcal{N}(F_{G,k}, \sigma_{F_G,k}^2), \\
+    F_{G,k} &= F_{0,G}\, 10^{-0.4\left(M_k + 5\log_{10}(r_k) - 5 + A_G\right)},
+        \label{eq:flux_likelihood_g}
+\end{align}
+y expresiones análogas para BP y RP. Esta alternativa conserva mejor la
+naturaleza asimétrica de la transformación, pero complica la
+verosimilitud y desplaza el modelo fuera del espacio magnitud-color en
+el que se define el prior del CMD. Por tal motivo, se la deja como
+extensión conceptual y no como formulación principal del proyecto.
+
+Se asume además que las magnitudes y colores han sido previamente
+corregidos por extinción interestelar (usando los mapas de
+\citealt{edenhofer2023parsecscale}), por lo que el término
+$A_\lambda$ de la Ecuación~\ref{eq:distmod_ext} no aparece
+explícitamente en la verosimilitud. Asimismo, la paralaje observada
+puede presentar un sesgo sistemático en su punto cero
+\citep[$\sim$\!$-17$ $\mu$as en promedio;][]{Lindegren_2021}; en la
+práctica, este sesgo se corrige restándolo de $\hat{\varpi}_k$ antes de
+la inferencia.
 
 \textbf{Nivel 2 --- Prior poblacional del CMD.} El prior conjunto 
 sobre la magnitud absoluta y el color se modela como una mezcla 
 finita de $B$ núcleos gaussianos distribuidos en una grilla sobre 
-el espacio color-magnitud:
+el espacio color-magnitud. A diferencia del modelo más rígido de
+referencia, aquí se propone una mezcla finita semiadaptativa: los
+centros de la grilla permanecen fijos, los pesos se aprenden a partir
+de los datos y la dispersión de los componentes se controla mediante
+pocos hiperparámetros globales. Específicamente,
 \begin{equation}
-    P(M_k, C_k \mid \{f_b\}) = \sum_{b=1}^{B} f_b \, 
+    P(M_k, C_k \mid \mathbf{f}, \lambda_M, \lambda_C) =
+    \sum_{b=1}^{B} f_b \, 
     \mathcal{N}\!\left(\begin{pmatrix} M_k \\ C_k \end{pmatrix} 
-    \;\middle|\; \boldsymbol{\mu}_b, \; \boldsymbol{\Sigma}_b\right)
+    \;\middle|\; \boldsymbol{\mu}_b, \; \boldsymbol{\Sigma}_b(\lambda_M, \lambda_C)\right)
     \label{eq:cmd_prior}
 \end{equation}
-donde $f_b$ es la fracción de estrellas asociada al componente $b$, 
-con $\sum_b f_b = 1$ y $f_b \geq 0$. Los centros $\boldsymbol{\mu}_b$ 
-y anchos $\boldsymbol{\Sigma}_b$ de los núcleos se fijan de antemano, 
-y las fracciones $\{f_b\}$ son los hiperparámetros que se infieren 
-de los datos. Las $\{f_b\}$ codifican la distribución poblacional 
-en el CMD --- es decir, el CMD ``libre de ruido''.
+donde $f_b$ es la fracción de estrellas asociada al componente $b$,
+con $\sum_b f_b = 1$ y $f_b \geq 0$, y
+\begin{equation}
+    \boldsymbol{\Sigma}_b(\lambda_M, \lambda_C) =
+    \mathbf{\Lambda}\, \boldsymbol{\Sigma}^{(0)}_b\, \mathbf{\Lambda},
+    \qquad
+    \mathbf{\Lambda} =
+    \begin{pmatrix}
+        \lambda_M & 0 \\
+        0 & \lambda_C
+    \end{pmatrix},
+    \label{eq:cmd_cov_scale}
+\end{equation}
+con $\boldsymbol{\mu}_b$ y $\boldsymbol{\Sigma}^{(0)}_b$ fijados a
+partir de una grilla inicial. Las fracciones $\mathbf{f}$ codifican la
+abundancia relativa de las regiones del CMD, mientras que
+$\lambda_M$ y $\lambda_C$ controlan la dispersión efectiva en
+magnitud absoluta y color. De este modo, el prior conserva una
+estructura interpretable y finita, pero permite una adaptación
+moderada a la muestra analizada.
 
-La elección de una grilla fija de núcleos gaussianos, en lugar de 
-un modelo de mezcla con centros y covarianzas libres, es una 
-decisión de diseño deliberada \citep{Leistedt_2017}: al fijar 
-$\boldsymbol{\mu}_b$ y $\boldsymbol{\Sigma}_b$, los únicos 
-parámetros libres del CMD son las fracciones $\{f_b\}$, lo que 
-preserva la conjugación con la distribución de Dirichlet y permite 
-el muestreo analítico de las distribuciones condicionales. Esto hace 
-que el modelo sea computacionalmente tratable con millones de 
-estrellas, a diferencia de un modelo de mezcla no paramétrico (como 
-un proceso de Dirichlet) que requeriría algoritmos más costosos.
+La elección de una grilla fija de núcleos gaussianos, en lugar de un
+modelo de mezcla con centros y covarianzas completamente libres, es
+una decisión de diseño deliberada. Permite introducir un aporte
+propio respecto al modelo de referencia sin perder control sobre la
+identificabilidad ni sobre el costo computacional. En particular, se
+descarta el uso de mezclas no paramétricas, como un proceso de
+Dirichlet, porque requerirían una inferencia considerablemente más
+costosa y añadirían complejidad innecesaria para los objetivos de un
+trabajo de pregrado.
 
 % TODO-FIGURA-OPCIONAL: Grilla de componentes gaussianos sobre el CMD.
 % Mantener si se quiere enfatizar visualmente cómo se construye el
@@ -925,28 +1029,63 @@ un proceso de Dirichlet) que requeriría algoritmos más costosos.
 % color $\in [-0.5, 4]$, $M_G \in [-2, 15]$), graficar sobre
 % datos de GeDR3mock.
 
-\textbf{Nivel 3 --- Hiperprior.} Las fracciones $\{f_b\}$ siguen 
-una distribución de Dirichlet $P(\{f_b\}) = \text{Dir}(\alpha_1, 
-\ldots, \alpha_B)$, que es el prior conjugado de la verosimilitud 
-multinomial y permite un muestreo eficiente 
-\citep[cap.~2]{Gelman_BDA3}.
+\textbf{Nivel 3 --- Hiperprior.} Las fracciones de mezcla siguen una
+distribución de Dirichlet regularizada,
+\begin{equation}
+    \mathbf{f} \mid \alpha \sim \text{Dir}(\alpha \eta_1, \ldots,
+    \alpha \eta_B),
+    \label{eq:dirichlet_hyper}
+\end{equation}
+donde $\boldsymbol{\eta}$ es un vector base fijado sobre la grilla y
+$\alpha$ controla el nivel global de concentración. Además,
+$\lambda_M$ y $\lambda_C$ reciben hiperpriors positivos, por ejemplo
+lognormales o half-normal, que actúan como regularización suave sobre
+la dispersión de los componentes. Esta parametrización permite que el
+modelo aprenda tanto la ocupación relativa del CMD como su grado de
+difusión, sin liberar todos los parámetros de la mezcla.
 
 \subsubsection{Posterior e inferencia}
-Combinando los tres niveles, la posterior de la distancia de la 
-estrella $k$, marginalizando sobre la magnitud absoluta y el color, 
-es:
+Combinando los tres niveles, la posterior conjunta del modelo
+semiadaptativo puede escribirse como
 \begin{equation}
-    P(r_k \mid \hat{\varpi}_k, \hat{m}_k, \hat{C}_k, \{f_b\}) 
-    \propto P(r_k) \sum_{b=1}^{B} f_b \, 
-    P(\hat{\varpi}_k \mid r_k) \, 
-    \tilde{P}_b(\hat{m}_k \mid r_k) \, 
-    \tilde{P}_b(\hat{C}_k)
-    \label{eq:posterior_dist}
+\begin{aligned}
+    &P\!\left(\{r_k, M_k, C_k, z_k\}_{k=1}^{N},
+    \mathbf{f}, \alpha, \lambda_M, \lambda_C
+    \;\middle|\; \text{datos}\right) \\
+    &\propto
+    \prod_{k=1}^{N}
+    P(\hat{\varpi}_k \mid r_k)
+    P(\hat{m}_k \mid M_k, r_k)
+    P(\hat{C}_k \mid C_k)
+    P(M_k, C_k \mid z_k, \lambda_M, \lambda_C)
+    P(z_k \mid \mathbf{f})
+    P(r_k) \\
+    &\qquad \times
+    P(\mathbf{f} \mid \alpha)
+    P(\alpha)
+    P(\lambda_M)
+    P(\lambda_C)
+\end{aligned}
+    \label{eq:semiadapt_post}
 \end{equation}
-donde $\tilde{P}_b$ denota las verosimilitudes convolucionadas con 
-el núcleo gaussiano del componente $b$. Explícitamente, dado que 
-tanto la verosimilitud como el núcleo del CMD son gaussianos, la 
-convolución es analítica; por ejemplo, para la magnitud:
+ donde $z_k \in \{1, \ldots, B\}$ denota la asignación latente del
+componente de mezcla. Para la estrella individual $k$, la posterior de
+la distancia se obtiene marginalizando sobre $M_k$, $C_k$ y $z_k$.
+
+En la práctica, la inferencia no se organizará alrededor de un único
+algoritmo universal. Los modelos reducidos y algunas submuestras
+podrán analizarse con MCMC para verificar comportamiento y comparar
+aproximaciones. Sin embargo, para el ajuste rutinario de los modelos
+con pesos flexibles y escalas de covarianza aprendidas se priorizará la
+inferencia variacional. Esta elección es coherente con el objetivo del
+proyecto: comparar variantes plausibles del modelo y cuantificar el
+compromiso entre flexibilidad, calidad inferencial y costo
+computacional.
+
+Cuando las covarianzas de base permanezcan fijas, la interacción entre
+la verosimilitud gaussiana y los núcleos gaussianos del CMD sigue
+permitiendo expresiones analíticas útiles; por ejemplo, para la
+magnitud:
 \begin{equation}
     \tilde{P}_b(\hat{m}_k \mid r_k) = \mathcal{N}\!\left(
     \hat{m}_k \;\middle|\; \mu_{M,b} + 5\log_{10}(r_k) - 5, \;
@@ -957,29 +1096,13 @@ componente $b$ en la dirección de magnitud absoluta. Expresiones
 análogas se obtienen para el color. El prior sobre la distancia 
 $P(r_k)$ puede ser el EDSD (Ecuación~\ref{eq:edsd}) u otro prior 
 espacial adecuado.
-
-La inferencia se realiza alternando entre:
-\begin{enumerate}
-    \item Muestrear las distancias individuales $\{r_k\}$ dado el CMD.
-    \item Muestrear las asignaciones de cada estrella a un componente 
-    del CMD.
-    \item Actualizar las fracciones $\{f_b\}$ mediante su distribución 
-    condicional conjugada (Dirichlet actualizada).
-\end{enumerate}
-Este esquema de muestreo de Gibbs permite derivar analíticamente 
-las distribuciones condicionales, evitando la necesidad de 
-algoritmos más costosos como HMC para la actualización de los 
-hiperparámetros.
-
-En el trabajo de \citet{Leistedt_2017}, esta estructura se explota
-mediante muestreo de Gibbs y marginalizaciones analíticas. En el
-presente proyecto, dicha formulación se adopta como referencia
-conceptual para el modelo completo, pero la implementación práctica se
-plantea de forma escalonada: los modelos reducidos podrán verificarse
-con métodos exactos o cuasi exactos en submuestras, mientras que las
-versiones de mayor tamaño se ajustarán preferentemente con métodos de
-aproximación como la inferencia variacional cuando ello permita una
-exploración más rápida del espacio de modelos.
+En el trabajo de \citet{Leistedt_2017}, una estructura más rígida se
+explota mediante muestreo de Gibbs y marginalizaciones analíticas. En
+el presente proyecto, esa formulación se adopta como referencia
+conceptual, pero la implementación práctica se restringe a una familia
+finita de variantes más manejables: verosimilitud fotométrica con
+errores derivados del flux, pesos de mezcla flexibles y adaptación
+global de la dispersión del prior del CMD.
 
 \subsection{Evaluación y Validación del Modelo}
 
@@ -1138,12 +1261,13 @@ En cada iteración se aplica el siguiente ciclo:
 \end{enumerate}
 
 Este ciclo se repite con complejidad creciente, partiendo de un modelo
-mínimo (Modelo~0) hasta alcanzar, idealmente, el modelo jerárquico
-completo (Modelo~3). Los Modelos~0--2 constituyen la ruta mínima de
-desarrollo y validación; el Modelo~3 representa la culminación
-metodológica prevista si los recursos computacionales y el tiempo de
-desarrollo lo permiten. La progresión concreta se detalla en la
-Sección~\ref{sec:iterativo}.
+mínimo (Modelo~0) hasta alcanzar un modelo semiadaptativo delimitado
+(Modelo~3). Los Modelos~0--2 constituyen la ruta mínima de
+desarrollo y validación; el Modelo~3 incorpora la flexibilización
+adicional propuesta para el CMD, pero sin pasar a mezclas no
+paramétricas ni a componentes completamente libres. La progresión
+concreta se detalla en la
+\hyperref[sec:iterativo]{subsección Desarrollo Iterativo del Modelo}.
 
 \subsection{Fuente de datos}
 
@@ -1162,7 +1286,9 @@ Este estudio se basa en dos fuentes de datos principales:
     propiedades intrínsecas de cada estrella (distancia, magnitud
     absoluta, color) son conocidas. Este catálogo se utilizará para la
     calibración basada en simulación durante la fase de desarrollo y
-    para las evaluaciones SBC.
+    para las evaluaciones SBC. Su uso resulta especialmente útil para
+    depurar formulaciones bajo una función de selección aproximada del
+    catálogo Gaia \citep{Everall_Boubert_2021}.
 \end{itemize}
 
 \subsection{Población y Muestra}
@@ -1180,12 +1306,25 @@ de trabajo se seleccionará en dos niveles:
     se construirá y validará cada iteración del modelo.
     \item \textbf{Muestra observacional:} un subconjunto de estrellas
     de Gaia DR3 seleccionadas con criterios de calidad fotométrica y
-    astrométrica, sobre el cual se aplicará el modelo validado.
+    astrométrica, sobre el cual se aplicará el modelo validado. En
+    particular, se exigirá flux positivo en las tres bandas y umbrales
+    mínimos de señal-ruido fotométrica tales como
+    $\hat{F}_G/\sigma_{F_G} > 50$,
+    $\hat{F}_{\mathrm{BP}}/\sigma_{F_{\mathrm{BP}}} > 20$ y
+    $\hat{F}_{\mathrm{RP}}/\sigma_{F_{\mathrm{RP}}} > 20$. Bajo la
+    aproximación de las Ecuaciones~\ref{eq:sigma_mag_flux}
+    y~\ref{eq:sigma_color_flux}, estos cortes implican errores de orden
+    $\sigma_G \leq 0.022$ mag y
+    $\sigma_{\mathrm{BP}}, \sigma_{\mathrm{RP}} \leq 0.054$ mag,
+    lo que hace más razonable la linealización local en magnitudes y
+    reduce la influencia de colas asimétricas en fuentes de fotometría
+    deficiente.
     \item \textbf{Muestra de validación externa:} estrellas
     pertenecientes a cúmulos abiertos de distancia bien establecida
     (e.g., las Pléyades, $\sim$136~pc), donde las distancias de
-    referencia permiten evaluar el desempeño del modelo de forma
-    independiente.
+    referencia y membresías homogéneas derivadas con Gaia permiten
+    evaluar el desempeño del modelo de forma independiente
+    \citep{CantatGaudin_2018, Galli_2017}.
 \end{itemize}
 
 \subsection{Desarrollo Iterativo del Modelo}
@@ -1203,17 +1342,24 @@ siguiente resume la progresión:
 \caption{Progresión iterativa de los modelos}\label{tab:modelos}
 \begin{tabular}{clll}
 \hline
-Modelo & Datos & Prior distancia & Prior CMD \\
+Modelo & Datos & Prior distancia & Estructura fotométrica/CMD \\
 \hline
 0 & $\hat{\varpi}_k$ & EDSD & --- \\
 1 & $\hat{\varpi}_k$, $\hat{m}_k$, $\hat{C}_k$ & EDSD &
-    priors independientes \\
-2 & $\hat{\varpi}_k$, $\hat{m}_k$, $\hat{C}_k$ & EDSD & GMM fijo \\
-3 & $\hat{\varpi}_k$, $\hat{m}_k$, $\hat{C}_k$ & EDSD & GMM
-    jerárquico \\
+    priors independientes, $\sigma$ desde flux \\
+2 & $\hat{\varpi}_k$, $\hat{m}_k$, $\hat{C}_k$ & EDSD & mezcla
+    finita con pesos flexibles \\
+3 & $\hat{\varpi}_k$, $\hat{m}_k$, $\hat{C}_k$ & EDSD & mezcla
+    semiadaptativa: pesos + escalas \\
 \hline
 \end{tabular}
 \end{table}
+
+En todos los casos, la especificación se presentará con la misma
+convención: primero los datos observados, luego el modelo generativo y
+finalmente la posterior objetivo. Esta estructura replica la forma en
+que los modelos se implementan en programación probabilística, donde
+la especificación generativa es el punto de partida de la inferencia.
 
 % TODO-FIGURA: Figura central de propuesta.
 % Diagrama de flujo del desarrollo iterativo.
@@ -1290,13 +1436,22 @@ estructura relevante de los datos.
 El Modelo~0 ignora la información fotométrica. El Modelo~1 incorpora
 las magnitudes aparentes y el color como datos observados adicionales,
 manteniendo priors independientes (no jerárquicos) para la magnitud
-absoluta y el color intrínseco.
+absoluta y el color intrínseco. La novedad respecto a una formulación
+fotométrica simplificada es que las incertidumbres de magnitud y color
+se obtienen a partir de los fluxes reportados por Gaia, en lugar de
+tratar la fotometría como exacta.
 
 \textbf{Datos observados adicionales.}
 Además de $\hat{\varpi}_k$, se observan la magnitud aparente
 $\hat{m}_k$ (en banda $G$) con incertidumbre $\sigma_{m,k}$
 y el color $\hat{C}_k = G_{\text{BP}} - G_{\text{RP}}$ con
-incertidumbre $\sigma_{C,k}$.
+incertidumbre $\sigma_{C,k}$. Estas incertidumbres se calculan a partir
+de los errores de flux según las Ecuaciones~\ref{eq:sigma_mag_flux}
+y~\ref{eq:sigma_color_flux}. La justificación de esta decisión es
+doble: por una parte, Gaia reporta directamente fluxes y sus errores;
+por otra, la muestra de trabajo se restringirá a fuentes con calidad
+fotométrica suficiente para que la aproximación gaussiana local en
+magnitudes sea razonable \citep{2021AJ....161..147B, Cox_Donnelly_2011}.
 
 \textbf{Modelo generativo.}
 Se mantiene el prior de distancia del Modelo~0 y se añaden:
@@ -1322,115 +1477,152 @@ la magnitud absoluta con la aparente.
 Se espera que la fotometría aporte restricciones adicionales sobre
 $r_k$, especialmente para estrellas con paralaje ruidosa, al vincular
 la distancia con la magnitud absoluta a través del módulo de distancia.
+Además, este modelo permite evaluar si incorporar explícitamente la
+incertidumbre fotométrica derivada del flux modifica de forma
+apreciable el ajuste respecto a la aproximación de magnitudes casi sin
+error. También deja explícita una delimitación importante: la
+formulación principal sigue estando en el espacio magnitud-color, y el
+tratamiento exacto en espacio de flux se reconoce como una extensión
+metodológica más fiel pero de mayor complejidad inferencial.
 
 \textbf{Verificación y evaluación.}
 Se repetirán las verificaciones que resulten factibles y los PPC. Se
 compararán las posteriors de $r_k$ con las
 del Modelo~0 para cuantificar la ganancia de información.
 
-\subsubsection{Modelo 2: CMD como prior poblacional fijo}
+\subsubsection{Modelo 2: CMD con pesos flexibles}
 
 Los priors independientes del Modelo~1 no capturan la correlación
 entre magnitud absoluta y color que define las secuencias
 del CMD. El Modelo~2 reemplaza los priors independientes por un
-modelo de mezcla de gaussianos (GMM) preentrenado sobre el CMD.
+modelo de mezcla de gaussianos finito sobre el CMD, manteniendo fija la
+grilla de centros pero permitiendo que los pesos de mezcla se aprendan
+de los datos.
 
 \textbf{Prior del CMD.}
-Se ajusta un GMM de $B$ componentes al CMD de GeDR3mock:
-\begin{equation}
-    \tilde{P}_b(M_k, C_k) = \sum_{b=1}^{B} f_b \;
-    \mathcal{N}\!\left(
-    \begin{pmatrix} M_k \\ C_k \end{pmatrix}
-    \;\Bigg|\;
-    \boldsymbol{\mu}_b,\; \boldsymbol{\Sigma}_b
-    \right),
-    \label{eq:m2_cmd}
-\end{equation}
-donde los pesos $f_b$, centros $\boldsymbol{\mu}_b$ y covarianzas
-$\boldsymbol{\Sigma}_b$ están \emph{fijos} en los valores
-preentrenados.
+Se define una grilla de $B$ componentes sobre el CMD a partir de
+GeDR3mock. Los centros $\boldsymbol{\mu}_b$ y las covarianzas base
+$\boldsymbol{\Sigma}^{(0)}_b$ permanecen fijos, mientras que los pesos
+de mezcla se modelan como
+\begin{align}
+    \mathbf{f} &\sim \text{Dir}(\alpha \eta_1, \ldots, \alpha \eta_B),
+        \label{eq:m2_weights} \\
+    z_k \mid \mathbf{f} &\sim \text{Categorical}(\mathbf{f}),
+        \label{eq:m2_alloc} \\
+    (M_k, C_k) \mid z_k=b &\sim
+        \mathcal{N}\!\left(
+        \begin{pmatrix} M_k \\ C_k \end{pmatrix}
+        \;\Bigg|\;
+        \boldsymbol{\mu}_b,\; \boldsymbol{\Sigma}^{(0)}_b
+        \right).
+        \label{eq:m2_cmd}
+\end{align}
 
 \textbf{Modelo generativo.}
 Las ecuaciones de verosimilitud~\eqref{eq:m1_lik_m}
 y~\eqref{eq:m1_lik_C} se mantienen, pero los priors independientes
-\eqref{eq:m1_prior_M}--\eqref{eq:m1_prior_C} se reemplazan por:
-\begin{equation}
-    (M_k, C_k) \sim \tilde{P}_b.
-    \label{eq:m2_prior_MC}
-\end{equation}
+\eqref{eq:m1_prior_M}--\eqref{eq:m1_prior_C} se reemplazan por la
+mezcla anterior. Este modelo ya introduce un mecanismo de contracción
+bayesiana a través de pesos de mezcla aprendidos en la muestra.
 
 \textbf{Contribución esperada.}
 El prior del CMD codifica la estructura astrofísica de las poblaciones
 estelares: la secuencia principal, el \textit{turn-off}, la rama de
 gigantes rojas. Se espera que esto mejore las estimaciones de distancia
 al restringir las combinaciones $(M, C)$ a regiones físicamente
-plausibles del CMD.
+plausibles del CMD. A diferencia de un GMM completamente fijo, este
+modelo permite que la ocupación relativa de cada región del CMD se
+adapte a la muestra analizada.
 
 \textbf{Verificación y evaluación.}
-Se aplicarán verificaciones con datos simulados y PPC. Se evaluará si la rigidez del GMM fijo
-introduce sesgos al no adaptarse a la muestra observacional.
+Se aplicarán verificaciones con datos simulados y PPC. Se evaluará si
+el aprendizaje de los pesos reduce sesgo o mejora cobertura respecto al
+Modelo~1 y respecto a una mezcla completamente fija.
 
-\subsubsection{Modelo 3: Modelo jerárquico completo}
+\subsubsection{Modelo 3: CMD semiadaptativo con dispersión aprendida}
 
-El modelo final permite que los pesos del GMM se infieran
-simultáneamente con los parámetros individuales de cada estrella,
-completando la estructura jerárquica descrita en el Capítulo~II.
+El modelo final del proyecto mantiene la grilla de centros del
+Modelo~2, conserva los pesos flexibles, e incorpora dos
+hiperparámetros globales que ajustan la dispersión efectiva de los
+componentes del CMD. Esta es la principal variante metodológica del
+trabajo respecto al modelo base de referencia.
 
 \textbf{Modelo generativo.}
-Se introduce un hiperprior Dirichlet sobre los pesos de mezcla:
+Se introducen hiperpriors sobre la concentración de los pesos y sobre
+las escalas globales de covarianza:
 \begin{align}
-    \mathbf{f} = (f_1, \ldots, f_B) &\sim
-        \text{Dirichlet}(\alpha_1, \ldots, \alpha_B),
+    \alpha &\sim \text{Gamma}(a_\alpha, b_\alpha),
         \label{eq:m3_hyper} \\
-    (M_k, C_k) \mid \mathbf{f} &\sim \sum_{b=1}^{B} f_b \;
+    \lambda_M &\sim \text{LogNormal}(0, \tau_M^2),
+        \label{eq:m3_lambdaM} \\
+    \lambda_C &\sim \text{LogNormal}(0, \tau_C^2),
+        \label{eq:m3_lambdaC} \\
+    \mathbf{f} \mid \alpha &\sim
+        \text{Dirichlet}(\alpha \eta_1, \ldots, \alpha \eta_B),
+        \label{eq:m3_weights} \\
+    z_k \mid \mathbf{f} &\sim \text{Categorical}(\mathbf{f}),
+        \label{eq:m3_alloc} \\
+    (M_k, C_k) \mid z_k=b, \lambda_M, \lambda_C &\sim
         \mathcal{N}\!\left(
         \begin{pmatrix} M_k \\ C_k \end{pmatrix}
         \;\Bigg|\;
-        \boldsymbol{\mu}_b,\; \boldsymbol{\Sigma}_b
+        \boldsymbol{\mu}_b,\;
+        \mathbf{\Lambda}\, \boldsymbol{\Sigma}^{(0)}_b\, \mathbf{\Lambda}
         \right),
         \label{eq:m3_cmd}
 \end{align}
-mientras las verosimilitudes de paralaje~\eqref{eq:m0_lik}, magnitud
-\eqref{eq:m1_lik_m} y color~\eqref{eq:m1_lik_C}, y el prior EDSD
-\eqref{eq:m0_prior} se mantienen como en los modelos anteriores.
+donde $\mathbf{\Lambda} = \text{diag}(\lambda_M, \lambda_C)$. Las
+verosimilitudes de paralaje~\eqref{eq:m0_lik}, magnitud
+\eqref{eq:m1_lik_m} y color~\eqref{eq:m1_lik_C}, junto con el prior
+EDSD~\eqref{eq:m0_prior}, se mantienen como en los modelos
+anteriores.
 
-Esto corresponde exactamente al modelo jerárquico presentado en la
-ecuación~\eqref{eq:hbm} del Capítulo~II. Los centros
-$\boldsymbol{\mu}_b$ y covarianzas $\boldsymbol{\Sigma}_b$ permanecen
-fijos en la grilla preentrenada; únicamente los pesos $f_b$ se
-infieren, siguiendo la estrategia de \citet{Leistedt_2017}.
+Este modelo no libera por completo la geometría de la mezcla. Los
+centros $\boldsymbol{\mu}_b$ permanecen fijos en la grilla
+preentrenada; solo se aprenden la ocupación relativa del CMD y la
+escala global de dispersión en ambas direcciones. Así se introduce
+flexibilidad adicional sin perder interpretabilidad ni disparar la
+complejidad inferencial.
 
 \textbf{Posterior conjunta.}
 La distribución posterior del modelo completo es:
 \begin{equation}
-    P\!\left(\{r_k, M_k, C_k\}_{k=1}^N, \mathbf{f}
-    \;\Big|\; \{\hat{\varpi}_k, \hat{m}_k, \hat{C}_k\}\right)
-    \propto
-    P(\mathbf{f})
+\begin{aligned}
+    &P\!\left(\{r_k, M_k, C_k, z_k\}_{k=1}^N, \mathbf{f},
+    \alpha, \lambda_M, \lambda_C
+    \;\Big|\; \{\hat{\varpi}_k, \hat{m}_k, \hat{C}_k\}\right) \\
+    &\propto
     \prod_{k=1}^{N}
     P(\hat{\varpi}_k \mid r_k)\;
     P(\hat{m}_k \mid r_k, M_k)\;
     P(\hat{C}_k \mid C_k)\;
-    P(M_k, C_k \mid \mathbf{f})\;
-    P(r_k).
+    P(M_k, C_k \mid z_k, \lambda_M, \lambda_C)\;
+    P(z_k \mid \mathbf{f})\;
+    P(r_k) \\
+    &\qquad \times
+    P(\mathbf{f} \mid \alpha)\;
+    P(\alpha)\;
+    P(\lambda_M)\;
+    P(\lambda_C)
+\end{aligned}
     \label{eq:m3_post}
 \end{equation}
 
 \textbf{Contribución esperada.}
-Al aprender los pesos de mezcla a partir de los datos, el modelo se
-adapta a la composición estelar de la muestra observacional concreta,
-produciendo la contracción bayesiana (\textit{shrinkage}) descrita
-en el Capítulo~II: las estimaciones individuales se benefician de la
-información compartida a nivel poblacional.
+Al aprender los pesos de mezcla y la dispersión global del prior del
+CMD, el modelo se adapta a la composición estelar de la muestra
+observacional concreta sin abandonar la estructura finita inicial.
+Esto permite estudiar explícitamente el compromiso entre rigidez del
+prior, precisión inferencial y costo computacional.
 
 \textbf{Verificación y evaluación.}
 SBC y PPC como en las iteraciones anteriores, en la medida en que el
 costo computacional lo permita. Adicionalmente se evaluará la
-recuperación de los pesos $\mathbf{f}$ simulados y la estabilidad de
-la inferencia en un espacio de parámetros de mayor dimensionalidad. Si
-el ajuste completo resulta prohibitivo, este modelo se implementará y
-evaluará en versiones reducidas o como etapa de profundización
-metodológica del proyecto.
+recuperación de los pesos $\mathbf{f}$ simulados, la sensibilidad a
+$\lambda_M$ y $\lambda_C$, y la estabilidad de la inferencia en un
+espacio de parámetros de mayor dimensionalidad. La estrategia de ajuste
+principal será inferencia variacional; MCMC se reservará para
+submuestras o verificaciones puntuales.
 
 \subsection{Protocolo de Validación}
 
@@ -1475,7 +1667,9 @@ Los modelos que superen el protocolo de validación con datos simulados
 se aplicarán a la muestra observacional de Gaia DR3. La evaluación
 final se realizará sobre estrellas del cúmulo abierto de las Pléyades
 ($\sim$136~pc), comparando las distancias estimadas por cada modelo
-con la distancia de referencia del cúmulo.
+con la distancia de referencia del cúmulo
+\citep{Galli_2017} y con catálogos de membresía homogéneos basados en
+Gaia \citep{CantatGaudin_2018}.
 
 Se cuantificarán:
 \begin{itemize}
@@ -1525,9 +1719,9 @@ Actividad & Mes 1 & Mes 2 & Mes 3 & Mes 4 & Mes 5 & Mes 6 \\
 Revisión bibliográfica & $\times$ & $\times$ & & & & \\
 Preparación de datos & $\times$ & $\times$ & & & & \\
 Modelo 0 (paralaje) & & $\times$ & & & & \\
-Modelo 1 (fotometría) & & $\times$ & $\times$ & & & \\
-Modelo 2 (CMD fijo) & & & $\times$ & $\times$ & & \\
-Modelo 3 (jerárquico) & & & & $\times$ & $\times$ & \\
+Modelo 1 (fotometría + flux) & & $\times$ & $\times$ & & & \\
+Modelo 2 (pesos flexibles) & & & $\times$ & $\times$ & & \\
+Modelo 3 (CMD semiadaptativo) & & & & $\times$ & $\times$ & \\
 Aplicación datos reales & & & & & $\times$ & \\
 Validación Pléyades & & & & & $\times$ & \\
 Redacción y documentación & & & $\times$ & $\times$ & $\times$ & $\times$ \\
