@@ -112,45 +112,59 @@ estrellas con mediciones más ruidosas.
 Aunque ya se han explorado enfoques similares en trabajos anteriores
 --- como los de \citet{Anderson_2017}, \citet{Zhang_2023} y
 \citet{2021AJ....161..147B} ---,
-este proyecto se distingue por proponer un enfoque completamente
-bayesiano jerárquico, siguiendo el modelo presentado por
-\citet{Leistedt_2017}, y por documentar de forma detallada el
-proceso iterativo de construcción y validación del modelo siguiendo
-el flujo de trabajo bayesiano propuesto por \citet{gelman2020bayesian}.
+este proyecto se distingue por tomar como referencia el modelo
+jerárquico de \citet{Leistedt_2017} para desarrollar una familia de
+modelos bayesianos de complejidad creciente, y por documentar de forma
+detallada el proceso iterativo de construcción, depuración y
+validación del modelo siguiendo el flujo de trabajo bayesiano
+propuesto por \citet{gelman2020bayesian}. El énfasis no estará en
+ajustar el modelo definitivo más grande posible, sino en construir una
+versión metodológicamente sólida, computacionalmente viable y útil
+para datos de Gaia en una muestra acotada.
 
 En este contexto, las preguntas que orientan esta investigación son:
 \begin{itemize}
-    \item ¿En qué medida un modelo bayesiano jerárquico que incorpore
-    la información del diagrama color-magnitud mejora la precisión de
+    \item ¿En qué medida la incorporación progresiva de información
+    fotométrica y del diagrama color-magnitud mejora la precisión de
     las estimaciones de distancia estelar, en comparación con la
-    inversión directa de la paralaje?
-    \item ¿Cómo se comporta dicho modelo en distintos regímenes de
-    señal-ruido de la paralaje, particularmente para estrellas con
-    alto error fraccional?
+    inversión directa de la paralaje y con modelos bayesianos más
+    simples?
+    \item ¿Qué nivel de complejidad modelística puede sostenerse de
+    forma computacionalmente viable dentro del marco de este
+    proyecto, sin
+    perder coherencia estadística ni capacidad de validación?
 \end{itemize}
 
 \subsection{Objetivos de la Investigación}
 
 \subsubsection{Objetivo general}
 
-Desarrollar un modelo bayesiano jerárquico que incorpore la
-información del diagrama color-magnitud para mejorar las estimaciones
-de distancias estelares a partir de datos de paralaje de Gaia DR3.
+Desarrollar y evaluar una familia de modelos bayesianos que incorpore
+progresivamente la información del diagrama color-magnitud para
+mejorar las estimaciones de distancias estelares a partir de datos de
+Gaia DR3.
 
 \subsubsection{Objetivos específicos}
 
 \begin{itemize}
     \item Revisar la literatura sobre métodos bayesianos aplicados
     a la estimación de distancias estelares.
-    \item Formular un modelo bayesiano jerárquico que incorpore la
-    información del diagrama color-magnitud como \textit{prior}
-    poblacional para la estimación de distancias.
-    \item Validar la implementación del modelo mediante calibración
-    basada en simulación, usando datos sintéticos del catálogo
-    simulado de Gaia.
-    \item Aplicar el modelo validado a datos observados de Gaia DR3
-    y evaluar la mejora en las estimaciones de distancia utilizando
-    cúmulos abiertos de distancia conocida como referencia.
+    \item Formular una secuencia de modelos bayesianos de complejidad
+    creciente, desde un modelo basado solo en paralaje hasta modelos
+    que incorporen información fotométrica y estructura poblacional
+    del CMD.
+    \item Utilizar datos simulados de Gaia para depurar, comparar y
+    descartar rápidamente formulaciones inadecuadas antes de su
+    aplicación a datos observados.
+    \item Validar la implementación de los modelos mediante un
+    conjunto de herramientas del flujo de trabajo bayesiano,
+    incluyendo calibración basada en simulación cuando sea factible,
+    chequeos predictivos posteriores y comparación con datos
+    simulados con verdad conocida.
+    \item Aplicar el modelo final seleccionado a una muestra acotada
+    de Gaia DR3 y evaluar la mejora obtenida en las estimaciones de
+    distancia utilizando cúmulos abiertos de distancia conocida como
+    referencia externa.
 \end{itemize}
 
 \subsection{Justificación de la investigación}
@@ -195,19 +209,27 @@ Esta investigación se circunscribe a los siguientes alcances:
     simulados del catálogo GeDR3mock. La validación se realizará
     sobre cúmulos abiertos seleccionados.
     \item \textbf{Alcance metodológico:} se adopta un enfoque
-    completamente bayesiano jerárquico, donde todos los parámetros
-    --- tanto las distancias individuales como los hiperparámetros
-    del CMD --- se infieren conjuntamente. No se emplean
-    aproximaciones empírico-bayesianas (que estiman los
-    hiperparámetros por separado y luego los fijan). La inferencia
-    se realizará mediante métodos de Monte Carlo vía cadenas de
-    Markov (MCMC). No se contemplan métodos de inferencia
-    variacional ni de aprendizaje profundo.
+    bayesiano con complejidad creciente, tomando como meta conceptual
+    el modelo jerárquico de \citet{Leistedt_2017}. No obstante, por
+    tratarse de un trabajo de pregrado, se priorizarán
+    implementaciones computacionalmente viables en muestras acotadas.
+    La inferencia variacional se utilizará como herramienta principal
+    de ajuste en los modelos aplicados, mientras que los métodos MCMC
+    y la calibración basada en simulación se reservarán para modelos
+    reducidos, submuestras o verificaciones puntuales donde su costo
+    sea manejable. También se permitirá comparar enfoques
+    completamente bayesianos con aproximaciones empírico-bayesianas
+    cuando ello ayude a evaluar el compromiso entre rigor e
+    implementabilidad.
     \item \textbf{Limitaciones:} el costo computacional puede
-    restringir el tamaño de la muestra analizable. El tratamiento de
-    la extinción interestelar se simplificará usando mapas de polvo
-    existentes, sin modelarla como parámetro libre del modelo
-    jerárquico.
+    restringir el tamaño de la muestra analizable y el nivel de
+    complejidad que pueda alcanzarse en el modelo final. El
+    tratamiento de la extinción interestelar se simplificará usando
+    mapas de polvo existentes, sin modelarla como parámetro libre del
+    modelo. No se pretende ajustar el catálogo Gaia DR3 completo ni
+    realizar una inferencia exacta a escala masiva, sino construir y
+    evaluar una estrategia metodológica reproducible sobre muestras
+    seleccionadas.
 \end{itemize}
 
 \newpage
@@ -319,10 +341,12 @@ relación fundamental es:
     r = \frac{1}{\varpi}
     \label{eq:parallax}
 \end{equation}
-% TODO-FIGURA: Esquema geométrico de la paralaje trigonométrica.
+% TODO-FIGURA: Figura central de propuesta.
+% Esquema geométrico de la paralaje trigonométrica.
 % Dibujar la Tierra en dos posiciones opuestas de su órbita, el Sol
 % en el centro, y una estrella distante. Indicar el ángulo $\varpi$,
 % la línea base de 1 UA, y la relación $r = 1/\varpi$.
+% Conviene porque facilita la lectura a jurados no astronómicos.
 % Cálculo: diagrama estático (TikZ o imagen externa).
 donde $r$ es la distancia en parsecs y $\varpi$ la paralaje en 
 segundos de arco. Esta relación es exacta en ausencia de error de 
@@ -373,9 +397,12 @@ distintas etapas evolutivas \citep{Carroll_Ostlie_2017}:
     de baja luminosidad.
 \end{itemize}
 
-% TODO-FIGURA: Diagrama Color-Magnitud (CMD) observado.
+% TODO-FIGURA: Figura central de propuesta.
+% Diagrama Color-Magnitud (CMD) observado.
 % Eje x: $G_{\text{BP}} - G_{\text{RP}}$, eje y: $M_G$ (invertido).
 % Etiquetar: secuencia principal, gigantes rojas, enanas blancas.
+% Esta figura justifica por qué el color aporta información sobre la
+% magnitud absoluta y, por tanto, sobre la distancia.
 % Cálculo: extraer $\sim$50\,000 estrellas de GeDR3mock con paralaje
 % $\text{S/N} > 10$, calcular $M_G = G + 5\log_{10}(\varpi) - 10$,
 % graficar como scatter con densidad (hexbin o KDE 2D).
@@ -401,6 +428,14 @@ correctamente a una estrella en el CMD. Para este proyecto, la
 corrección de extinción se realizará mediante mapas tridimensionales 
 de polvo existentes, como el de \citet{edenhofer2023parsecscale}.
 
+% TODO-FIGURA: Figura recomendable de propuesta.
+% Efecto conceptual de la extinción sobre el CMD.
+% Mostrar una estrella desplazándose en color y magnitud por efecto
+% del polvo, idealmente con un vector de enrojecimiento sobre un CMD
+% simplificado. No hace falta usar datos reales; basta un esquema.
+% Conviene porque este supuesto metodológico afecta directamente la
+% interpretación del prior fotométrico.
+
 \subsubsection{La misión Gaia y el catálogo DR3}
 La misión Gaia de la Agencia Espacial Europea es un proyecto de 
 cartografía estelar que mide posiciones, movimientos propios y 
@@ -416,10 +451,12 @@ $\sigma_\varpi/\varpi$ sigue siendo significativo para la mayoría
 de las fuentes del catálogo, lo que motiva el desarrollo de métodos 
 de inferencia sofisticados.
 
-% TODO-FIGURA: Histograma del error fraccional de la paralaje
+% TODO-FIGURA: Figura central de propuesta.
+% Histograma del error fraccional de la paralaje
 % ($\sigma_\varpi / \varpi$) para una muestra de Gaia DR3.
 % Marcar con línea vertical el umbral 0.2 donde la inversión
 % directa deja de ser confiable (Bailer-Jones, 2015).
+% Esta figura conecta el problema estadístico con el catálogo real.
 % Cálculo: extraer parallax y parallax\_error de Gaia, calcular
 % el cociente, graficar histograma con escala logarítmica en $y$.
 
@@ -430,6 +467,14 @@ función de selección, el ruido observacional y los errores
 sistemáticos --- pero donde las propiedades intrínsecas de cada 
 estrella (distancia verdadera, magnitud absoluta, color) son 
 conocidas.
+
+% TODO-FIGURA: Figura recomendable de propuesta.
+% Esquema del papel de GeDR3mock en el flujo de trabajo.
+% Mostrar: Gaia DR3 observado, GeDR3mock con verdad conocida,
+% depuración del modelo, comparación entre formulaciones y selección
+% del modelo final. Puede ser un diagrama simple, no un resultado.
+% Conviene porque aclara por qué la simulación no es un añadido, sino
+% una pieza central de la estrategia metodológica.
 
 \subsection{Métodos de Estimación de Distancias Estelares}
 
@@ -651,11 +696,13 @@ distribución espacial de las estrellas antes de observar la paralaje.
     para errores fraccionales grandes.
 \end{enumerate}
 
-% TODO-FIGURA: Comparación de tres priors para la distancia.
+% TODO-FIGURA: Figura central de propuesta.
+% Comparación de tres priors para la distancia.
 % Graficar $P(r)$ para: (a) uniforme impropio, (b) uniforme truncado
 % en $r_{\text{lim}} = 2$ kpc, (c) EDSD con $L = 1.35$ kpc.
 % Superponer la posterior resultante para una estrella con
 % $\hat{\varpi} = 0.5$ mas y $\sigma_\varpi = 0.3$ mas.
+% Conviene porque resume una decisión estadística central del trabajo.
 % Cálculo: evaluar analíticamente cada prior, multiplicar por
 % la verosimilitud gaussiana, normalizar e integrar numéricamente.
 
@@ -697,8 +744,9 @@ La distribución posterior conjunta es:
     \label{eq:hbm}
 \end{equation}
 
-% TODO-FIGURA: Diagrama de placa (plate notation) del modelo
-% jerárquico. Mostrar: nodo observado ($\hat{\varpi}_k$,
+% TODO-FIGURA: Figura central de propuesta.
+% Diagrama de placa (plate notation) del modelo jerárquico.
+% Mostrar: nodo observado ($\hat{\varpi}_k$,
 % $\hat{m}_k$, $\hat{C}_k$), nodos latentes ($r_k$, $M_k$, $C_k$),
 % hiperparámetros ($\{f_b\}$), e hiperprior ($\alpha$). La placa
 % encierra los $N$ nodos individuales.
@@ -723,7 +771,9 @@ sesgo, particularmente para las estrellas que más lo necesitan
 los modelos jerárquicos, demostrada formalmente en el contexto 
 estadístico por \citet[cap.~5]{Gelman_BDA3}.
 
-% TODO-FIGURA: Ilustración de la contracción bayesiana (shrinkage).
+% TODO-FIGURA-OPCIONAL: Ilustración de la contracción bayesiana.
+% Útil para exposición oral o versión extendida, pero no esencial en
+% la propuesta si ya se incluyen CMD, priors y plate notation.
 % Panel izquierdo: estimaciones por inversión directa ($1/\varpi$)
 % con barras de error grandes. Panel derecho: estimaciones del
 % modelo jerárquico con intervalos más estrechos, contraídos hacia
@@ -770,6 +820,15 @@ integrales, no para optimización.
     automáticamente la longitud de la trayectoria, eliminando la 
     necesidad de calibrar manualmente este hiperparámetro. NUTS es 
     el algoritmo por defecto en PyMC y Stan.
+    \item \textbf{Inferencia variacional (VI):} reemplaza la
+    posterior exacta por una familia paramétrica de distribuciones y
+    optimiza sus parámetros minimizando una divergencia respecto a la
+    posterior verdadera. Su principal ventaja es la rapidez
+    computacional, especialmente en modelos grandes o durante fases de
+    prototipado. Su desventaja es que puede subestimar la
+    incertidumbre, por lo que conviene complementarla con chequeos
+    predictivos, comparaciones con datos simulados y contrastes con
+    MCMC en subproblemas reducidos.
 \end{enumerate}
 
 \subsubsection{Diagnósticos de convergencia}
@@ -783,12 +842,11 @@ $\hat{R}$ \citep{Vehtari_Rhat_2021}, que compara la varianza entre
 cadenas con la varianza dentro de cadenas, y la inspección visual 
 de las trazas.
 
-% TODO-FIGURA: Ejemplo de trazas MCMC y diagnósticos.
-% Cuatro paneles: (a) traza de $r_k$ mostrando convergencia,
-% (b) función de autocorrelación, (c) histograma de la posterior,
-% (d) forest plot de $\hat{R}$ para múltiples parámetros.
-% Cálculo: ejecutar el Modelo 0 (Cap. III) y extraer
-% diagnósticos con ArviZ (az.plot\_trace, az.plot\_autocorr).
+% TODO-RESULTADOS: Diagnósticos de inferencia.
+% No incluir como figura de propuesta. Reservar para Cap. IV o anexos.
+% Si se produce, debe reflejar el método efectivamente usado:
+% diagnósticos MCMC cuando se use NUTS y, para VI, estabilidad del
+% ELBO o comparación entre inicializaciones, no solo trazas MCMC.
 
 \subsection{El Modelo Jerárquico del Diagrama Color-Magnitud}
 
@@ -856,7 +914,9 @@ que el modelo sea computacionalmente tratable con millones de
 estrellas, a diferencia de un modelo de mezcla no paramétrico (como 
 un proceso de Dirichlet) que requeriría algoritmos más costosos.
 
-% TODO-FIGURA: Grilla de componentes gaussianos sobre el CMD.
+% TODO-FIGURA-OPCIONAL: Grilla de componentes gaussianos sobre el CMD.
+% Mantener si se quiere enfatizar visualmente cómo se construye el
+% prior del CMD en los Modelos 2 y 3. Prioridad media.
 % Graficar el CMD observado (scatter con densidad) y superponer
 % los centros $\boldsymbol{\mu}_b$ como puntos con elipses
 % representando $\boldsymbol{\Sigma}_b$. Mostrar cómo la grilla
@@ -911,6 +971,16 @@ las distribuciones condicionales, evitando la necesidad de
 algoritmos más costosos como HMC para la actualización de los 
 hiperparámetros.
 
+En el trabajo de \citet{Leistedt_2017}, esta estructura se explota
+mediante muestreo de Gibbs y marginalizaciones analíticas. En el
+presente proyecto, dicha formulación se adopta como referencia
+conceptual para el modelo completo, pero la implementación práctica se
+plantea de forma escalonada: los modelos reducidos podrán verificarse
+con métodos exactos o cuasi exactos en submuestras, mientras que las
+versiones de mayor tamaño se ajustarán preferentemente con métodos de
+aproximación como la inferencia variacional cuando ello permita una
+exploración más rápida del espacio de modelos.
+
 \subsection{Evaluación y Validación del Modelo}
 
 La validación del modelo sigue el flujo de trabajo bayesiano 
@@ -928,12 +998,9 @@ del parámetro verdadero dentro de las muestras de la posterior. Si
 el algoritmo está correctamente implementado y el modelo es 
 consistente, la distribución de rangos debe ser uniforme.
 
-% TODO-FIGURA: Histograma de rangos SBC.
-% Paneles para 2--3 parámetros (distancia, magnitud). La
-% distribución uniforme indica calibración correcta; desviaciones
-% indican errores de implementación o inconsistencia del modelo.
-% Cálculo: generar 500 réplicas SBC del Modelo 0 (Cap. III),
-% calcular rangos, graficar con bandas de confianza al 99\%%.
+% TODO-RESULTADOS: Histograma de rangos SBC.
+% Mover a Cap. IV o anexos. Es una evidencia de validación ya
+% ejecutada, no una figura necesaria para la propuesta.
 
 \subsubsection{Chequeo predictivo posterior (PPC)}
 El chequeo predictivo posterior \citep[cap.~6]{Gelman_BDA3} compara 
@@ -944,12 +1011,9 @@ Se utilizan estadísticos de resumen (distribución de paralajes,
 distribución de colores, estructura del CMD) para evaluar 
 discrepancias sistemáticas.
 
-% TODO-FIGURA: Ejemplo de chequeo predictivo posterior (PPC).
-% Comparar la distribución de paralajes observadas con replicadas
-% desde la posterior (histogramas superpuestos). También comparar
-% la densidad 2D del CMD observado vs replicado.
-% Cálculo: muestrear datos replicados desde la posterior del
-% modelo, calcular estadísticos de resumen y graficar.
+% TODO-RESULTADOS: Ejemplo de chequeo predictivo posterior (PPC).
+% Mover a Cap. IV o anexos. Conviene como resultado de validación,
+% no como figura de propuesta.
 
 \subsubsection{Métricas de rendimiento}
 Las métricas principales para evaluar la mejora lograda por el 
@@ -1060,18 +1124,25 @@ En cada iteración se aplica el siguiente ciclo:
 \begin{enumerate}
     \item Especificar el modelo generativo (prior $+$ verosimilitud).
     \item Verificar la implementación mediante calibración basada en
-    simulación (SBC) con datos generados a partir del propio modelo.
+    simulación (SBC) cuando sea computacionalmente factible,
+    especialmente en modelos reducidos y con datos sintéticos.
     \item Ajustar el modelo a datos (simulados primero, reales después)
-    mediante MCMC (NUTS).
+    mediante inferencia variacional o, cuando el tamaño del problema
+    lo permita, mediante MCMC.
     \item Evaluar el ajuste mediante chequeo predictivo posterior (PPC)
-    y diagnósticos de convergencia ($\hat{R}$, ESS).
+    y diagnósticos acordes con el método de inferencia empleado
+    ($\hat{R}$, ESS para MCMC; estabilidad del ELBO y comparación entre
+    inicializaciones para VI).
     \item Identificar las discrepancias entre el modelo y los datos y
     decidir la dirección de la próxima expansión.
 \end{enumerate}
 
 Este ciclo se repite con complejidad creciente, partiendo de un modelo
-mínimo (Modelo~0) hasta alcanzar el modelo jerárquico completo
-(Modelo~3). La progresión concreta se detalla en la
+mínimo (Modelo~0) hasta alcanzar, idealmente, el modelo jerárquico
+completo (Modelo~3). Los Modelos~0--2 constituyen la ruta mínima de
+desarrollo y validación; el Modelo~3 representa la culminación
+metodológica prevista si los recursos computacionales y el tiempo de
+desarrollo lo permiten. La progresión concreta se detalla en la
 Sección~\ref{sec:iterativo}.
 
 \subsection{Fuente de datos}
@@ -1103,7 +1174,7 @@ de trabajo se seleccionará en dos niveles:
 
 \begin{itemize}
     \item \textbf{Muestra de desarrollo:} un subconjunto de estrellas
-    del catálogo GeDR3mock ($\sim$50\,000 fuentes) con distancias
+    del catálogo GeDR3mock ($\sim$10\,000--50\,000 fuentes) con distancias
     verdaderas conocidas, que cubra un rango representativo de tipos
     estelares y niveles de señal-ruido en la paralaje, sobre el cual
     se construirá y validará cada iteración del modelo.
@@ -1123,7 +1194,8 @@ de trabajo se seleccionará en dos niveles:
 Siguiendo las recomendaciones de \citet{gelman2020bayesian}, el modelo
 se construye de forma incremental. Cada iteración añade un componente
 al modelo anterior y se somete al ciclo completo de verificación
-(SBC), ajuste (MCMC) y evaluación (PPC \& diagnósticos). La tabla
+sugerida (SBC cuando corresponda), ajuste (VI o MCMC reducido) y
+evaluación (PPC \& diagnósticos). La tabla
 siguiente resume la progresión:
 
 \begin{table}[H]
@@ -1143,10 +1215,11 @@ Modelo & Datos & Prior distancia & Prior CMD \\
 \end{tabular}
 \end{table}
 
-% TODO-FIGURA: Diagrama de flujo del desarrollo iterativo.
+% TODO-FIGURA: Figura central de propuesta.
+% Diagrama de flujo del desarrollo iterativo.
 % Cuatro bloques (Modelo 0 → 1 → 2 → 3) conectados por flechas,
-% con el ciclo SBC/PPC en cada bloque. Indicar qué componente se
-% añade en cada transición.
+% mostrando el ciclo especificación, ajuste, PPC, comparación y
+% decisión. Debe complementar la tabla, no repetirla.
 % Cálculo: diagrama estático (TikZ o draw.io).
 
 \subsubsection{Modelo 0: Prior exponencial con verosimilitud de paralaje}
@@ -1185,14 +1258,19 @@ Combinando prior y verosimilitud mediante el teorema de Bayes:
     \label{eq:m0_post}
 \end{equation}
 
-Esta distribución no tiene forma cerrada; se muestreará con NUTS.
+Esta distribución no tiene forma cerrada; se aproximará
+numéricamente, preferiblemente mediante inferencia variacional para
+las corridas de desarrollo, contrastando en submuestras con NUTS o con
+integración numérica cuando sea necesario.
 
 \textbf{Verificación (SBC).}
-Se generarán $S = 500$ conjuntos de datos simulados a partir de las
-ecuaciones~\eqref{eq:m0_prior}--\eqref{eq:m0_lik}. Para cada conjunto
-se ajustará el modelo y se calculará el rango del valor verdadero en
-las muestras posteriores. Si la implementación es correcta, la
-distribución de rangos será uniforme \citep{Talts_2018}.
+Se generarán conjuntos de datos simulados a partir de las
+ecuaciones~\eqref{eq:m0_prior}--\eqref{eq:m0_lik}. En una versión
+reducida del modelo, se calculará el rango del valor verdadero en las
+muestras posteriores o aproximaciones posteriores. Si la
+implementación es correcta, la distribución de rangos será uniforme
+\citep{Talts_2018}. El número de réplicas se ajustará al costo
+computacional disponible.
 
 \textbf{Evaluación (PPC).}
 Se compararán las paralajes observadas $\hat{\varpi}_k$ con las
@@ -1200,11 +1278,12 @@ paralajes replicadas $\hat{\varpi}_k^{\text{rep}}$ generadas desde la
 posterior. Discrepancias sistemáticas indicarán que el modelo omite
 estructura relevante de los datos.
 
-% TODO-FIGURA: Resultados del Modelo 0.
+% TODO-PILOTO-RESULTADOS: Resultados del Modelo 0.
+% Incluir solo si antes de la entrega de la propuesta ya existe una
+% corrida piloto convincente. En caso contrario, mover a Cap. IV.
 % (a) Posterior de $r_k$ para 5 estrellas con diferente S/N.
-% (b) Histograma de rangos SBC (esperado: uniforme).
+% (b) Histograma de rangos SBC, si se ejecutó.
 % (c) PPC: $\hat{\varpi}^{\text{obs}}$ vs $\hat{\varpi}^{\text{rep}}$.
-% Cálculo: implementar el modelo en PyMC, ejecutar SBC y PPC.
 
 \subsubsection{Modelo 1: Incorporación de la fotometría}
 
@@ -1245,7 +1324,8 @@ $r_k$, especialmente para estrellas con paralaje ruidosa, al vincular
 la distancia con la magnitud absoluta a través del módulo de distancia.
 
 \textbf{Verificación y evaluación.}
-Se repetirán SBC y PPC. Se compararán las posteriors de $r_k$ con las
+Se repetirán las verificaciones que resulten factibles y los PPC. Se
+compararán las posteriors de $r_k$ con las
 del Modelo~0 para cuantificar la ganancia de información.
 
 \subsubsection{Modelo 2: CMD como prior poblacional fijo}
@@ -1287,7 +1367,7 @@ al restringir las combinaciones $(M, C)$ a regiones físicamente
 plausibles del CMD.
 
 \textbf{Verificación y evaluación.}
-Se aplicarán SBC y PPC. Se evaluará si la rigidez del GMM fijo
+Se aplicarán verificaciones con datos simulados y PPC. Se evaluará si la rigidez del GMM fijo
 introduce sesgos al no adaptarse a la muestra observacional.
 
 \subsubsection{Modelo 3: Modelo jerárquico completo}
@@ -1344,10 +1424,13 @@ en el Capítulo~II: las estimaciones individuales se benefician de la
 información compartida a nivel poblacional.
 
 \textbf{Verificación y evaluación.}
-SBC y PPC como en las iteraciones anteriores. Adicionalmente se
-evaluará la recuperación de los pesos $\mathbf{f}$ simulados y la
-convergencia del muestreador en un espacio de parámetros de mayor
-dimensionalidad.
+SBC y PPC como en las iteraciones anteriores, en la medida en que el
+costo computacional lo permita. Adicionalmente se evaluará la
+recuperación de los pesos $\mathbf{f}$ simulados y la estabilidad de
+la inferencia en un espacio de parámetros de mayor dimensionalidad. Si
+el ajuste completo resulta prohibitivo, este modelo se implementará y
+evaluará en versiones reducidas o como etapa de profundización
+metodológica del proyecto.
 
 \subsection{Protocolo de Validación}
 
@@ -1356,10 +1439,12 @@ integra las herramientas de evaluación descritas en el Capítulo~II:
 
 \begin{enumerate}
     \item \textbf{Calibración basada en simulación (SBC):}
-    se generan $S = 500$ réplicas a partir del modelo generativo,
-    se ajusta el modelo a cada réplica, y se verifica que la
-    distribución de rangos sea uniforme \citep{Talts_2018}. Si no
-    lo es, se revisa la implementación antes de continuar.
+    se generan réplicas a partir del modelo generativo y se verifica,
+    en modelos reducidos o submuestras, que la distribución de rangos
+    sea aproximadamente uniforme \citep{Talts_2018}. Esta herramienta
+    se utilizará de forma selectiva, como diagnóstico de
+    implementación, y no como requisito exhaustivo en todos los
+    ajustes de gran tamaño.
     \item \textbf{Ajuste a datos simulados (GeDR3mock):}
     se aplica el modelo a una muestra del catálogo simulado donde
     las distancias verdaderas son conocidas. Se evalúan sesgo
@@ -1369,17 +1454,20 @@ integra las herramientas de evaluación descritas en el Capítulo~II:
     los datos observados usando estadísticos de resumen (distribución
     de paralajes, distribución de colores, diagrama CMD).
     \item \textbf{Diagnósticos de convergencia:}
-    se verifican $\hat{R} < 1.01$ \citep{Vehtari_Rhat_2021},
-    $\text{ESS}_{\text{bulk}} > 400$ y ausencia de divergencias en
-    el muestreador NUTS.
+    cuando se use MCMC, se verifican $\hat{R} < 1.01$
+    \citep{Vehtari_Rhat_2021}, $\text{ESS}_{\text{bulk}} > 400$ y
+    ausencia de divergencias. Cuando se use inferencia variacional,
+    se monitoreará la estabilidad del ELBO, la sensibilidad a la
+    inicialización y la concordancia de los PPC con los datos.
     \item \textbf{Comparación entre modelos:}
     se comparan las métricas del modelo actual con las del modelo
     anterior para cuantificar la ganancia en precisión y la reducción
     de sesgos.
 \end{enumerate}
 
-Solamente cuando una iteración supera satisfactoriamente los pasos
-1--4 se procede a la siguiente expansión del modelo.
+Solamente cuando una iteración supera satisfactoriamente las
+verificaciones relevantes para su escala y método de ajuste se procede
+a la siguiente expansión del modelo.
 
 \subsection{Aplicación a datos reales y validación externa}
 
@@ -1408,11 +1496,12 @@ La implementación se realizará en el lenguaje Python con las siguientes
 bibliotecas:
 \begin{description}
     \item[\texttt{PyMC}] para la especificación de los modelos
-    probabilísticos y la inferencia mediante el muestreador NUTS
-    \citep{Hoffman_Gelman_2014}.
+    probabilísticos y la inferencia, principalmente mediante
+    aproximaciones variacionales y, en subproblemas reducidos,
+    mediante el muestreador NUTS \citep{Hoffman_Gelman_2014}.
     \item[\texttt{ArviZ}] para los diagnósticos de convergencia
-    ($\hat{R}$, ESS, trazas), los chequeos predictivos posteriores
-    y la calibración basada en simulación.
+    ($\hat{R}$, ESS, trazas), el monitoreo de ajustes, los chequeos
+    predictivos posteriores y la calibración basada en simulación.
     \item[\texttt{astroquery}] para la extracción de datos del
     archivo de Gaia mediante consultas ADQL.
     \item[\texttt{scikit-learn}] para el ajuste del GMM preentrenado
