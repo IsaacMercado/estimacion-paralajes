@@ -153,14 +153,14 @@ Gaia DR3.
     creciente, desde un modelo basado solo en paralaje hasta modelos
     que incorporen información fotométrica y estructura poblacional
     del CMD.
-    \item Utilizar datos simulados de Gaia para depurar, comparar y
-    descartar rápidamente formulaciones inadecuadas antes de su
-    aplicación a datos observados.
+    \item Utilizar simulaciones oficiales de Gaia para depurar,
+    comparar y descartar rápidamente formulaciones inadecuadas antes
+    de su aplicación a datos observados.
     \item Validar la implementación de los modelos mediante un
     conjunto de herramientas del flujo de trabajo bayesiano,
-    incluyendo calibración basada en simulación cuando sea factible,
-    chequeos predictivos posteriores y comparación con datos
-    simulados con verdad conocida.
+    incluyendo chequeos con datos simulados de verdad conocida,
+    chequeos predictivos posteriores y, cuando sea computacionalmente
+    factible, calibración basada en simulación en modelos reducidos.
     \item Aplicar el modelo final seleccionado a una muestra acotada
     de Gaia DR3 y evaluar la mejora obtenida en las estimaciones de
     distancia utilizando cúmulos abiertos de distancia conocida como
@@ -205,9 +205,11 @@ Esta investigación se circunscribe a los siguientes alcances:
     edades o metalicidades.
     \item \textbf{Alcance de datos:} se utilizan datos astrométricos
     y fotométricos del catálogo Gaia DR3 (bandas $G$, $G_{\text{BP}}$,
-    $G_{\text{RP}}$). Para la fase de desarrollo se emplearán datos
-    simulados del catálogo GeDR3mock. La validación se realizará
-    sobre cúmulos abiertos seleccionados.
+    $G_{\text{RP}}$). Para la fase de desarrollo se emplearán las
+    simulaciones oficiales del archivo Gaia, distinguiendo una capa
+    intrínseca de referencia y una capa observacional simulada con
+    ruido. La validación se realizará sobre cúmulos abiertos
+    seleccionados.
     \item \textbf{Alcance metodológico:} se adopta un enfoque
     bayesiano con complejidad creciente, tomando como meta conceptual
     el modelo jerárquico de \citet{Leistedt_2017}. No obstante, por
@@ -226,10 +228,15 @@ Esta investigación se circunscribe a los siguientes alcances:
     complejidad que pueda alcanzarse en el modelo final. El
     tratamiento de la extinción interestelar se simplificará usando
     mapas de polvo existentes, sin modelarla como parámetro libre del
-    modelo. No se pretende ajustar el catálogo Gaia DR3 completo ni
+    modelo. La modelización fotométrica principal se realizará en el
+    espacio de magnitudes y color, usando incertidumbres derivadas de
+    los errores de flujo mediante una aproximación de primer orden,
+    por lo que se requerirán criterios de calidad fotométrica y se
+    dejará un tratamiento exacto en espacio de flujos como extensión.
+    Tampoco se pretende ajustar el catálogo Gaia DR3 completo ni
     realizar una inferencia exacta a escala masiva, sino construir y
     evaluar una estrategia metodológica reproducible sobre muestras
-    seleccionadas.
+    seleccionadas y una familia acotada de priors sobre el CMD.
 \end{itemize}
 
 \newpage
@@ -412,8 +419,9 @@ distintas etapas evolutivas \citep{Carroll_Ostlie_2017}:
 % Etiquetar: secuencia principal, gigantes rojas, enanas blancas.
 % Esta figura justifica por qué el color aporta información sobre la
 % magnitud absoluta y, por tanto, sobre la distancia.
-% Cálculo: extraer $\sim$50\,000 estrellas de GeDR3mock con paralaje
-% $\text{S/N} > 10$, calcular $M_G = G + 5\log_{10}(\varpi) - 10$,
+% Cálculo: extraer $\sim$50\,000 fuentes de las simulaciones
+% oficiales de Gaia con paralaje $\text{S/N} > 10$, calcular
+% $M_G = G + 5\log_{10}(\varpi) - 10$,
 % graficar como scatter con densidad (hexbin o KDE 2D).
 
 Esta estructura del CMD implica que el color de una estrella 
@@ -470,19 +478,33 @@ de inferencia sofisticados.
 % Cálculo: extraer parallax y parallax\_error de Gaia, calcular
 % el cociente, graficar histograma con escala logarítmica en $y$.
 
-Para la fase de desarrollo y calibración del modelo, se utilizará 
-el catálogo simulado GeDR3mock \citep{Rybizki_2020}, que reproduce 
-las propiedades estadísticas del catálogo real --- incluyendo la 
-función de selección, el ruido observacional y los errores 
-sistemáticos --- pero donde las propiedades intrínsecas de cada 
-estrella (distancia verdadera, magnitud absoluta, color) son 
-conocidas. Esta dimensión de completitud y selección es importante,
-puesto que la inferencia sobre catálogos Gaia depende también de la
-función de selección observacional \citep{Everall_Boubert_2021}.
+Para la fase de desarrollo y validación interna del modelo, se
+utilizarán preferentemente las simulaciones oficiales del archivo
+Gaia. En particular, se distinguirá una capa intrínseca de
+referencia, asociada al Gaia Universe Model Snapshot
+\citep{Robin_2012}, y una capa observacional simulada con ruido,
+generada con el Gaia Object Generator \citep{Luri_2014}. En el
+archivo Gaia, esta separación se materializa en tablas como
+\texttt{gaia\_universe\_model} y
+\texttt{gaia\_source\_simulation}. Esta separación entre ``verdad''
+y ``observación simulada'' permite trabajar en escenarios con verdad
+conocida para detectar errores de
+implementación, comparar formulaciones y descartar modelos
+inadecuados en etapas tempranas del flujo bayesiano
+\citep[sec.~4.1]{gelman2020bayesian}. El uso de simulaciones no
+sustituye la aplicación a datos reales, sino que funciona como una
+etapa de depuración y validación metodológica previa. Esta dimensión
+de completitud y selección es importante, puesto que la inferencia
+sobre catálogos Gaia depende también de la función de selección
+observacional \citep{Everall_Boubert_2021,CastroGinard_2023}; de
+hecho, estrategias análogas de experimentación con datos simulados se
+han utilizado para estudiar el comportamiento de soluciones
+astrométricas de Gaia bajo escenarios controlados \citep{Michalik_2015}.
 
 % TODO-FIGURA: Figura recomendable de propuesta.
-% Esquema del papel de GeDR3mock en el flujo de trabajo.
-% Mostrar: Gaia DR3 observado, GeDR3mock con verdad conocida,
+% Esquema del papel de las simulaciones oficiales de Gaia en el flujo
+% de trabajo. Mostrar: Gaia DR3 observado, capa intrínseca de
+% referencia y capa observacional simulada,
 % depuración del modelo, comparación entre formulaciones y selección
 % del modelo final. Puede ser un diagrama simple, no un resultado.
 % Conviene porque aclara por qué la simulación no es un añadido, sino
@@ -1027,7 +1049,7 @@ trabajo de pregrado.
 % cubre densamente las regiones pobladas del CMD.
 % Cálculo: definir la grilla (e.g., $20 \times 20$ en el rango
 % color $\in [-0.5, 4]$, $M_G \in [-2, 15]$), graficar sobre
-% datos de GeDR3mock.
+% datos de la muestra de desarrollo simulada.
 
 \textbf{Nivel 3 --- Hiperprior.} Las fracciones de mezcla siguen una
 distribución de Dirichlet regularizada,
@@ -1112,14 +1134,19 @@ que prescribe una serie de verificaciones iterativas antes de
 confiar en los resultados de la inferencia.
 
 \subsubsection{Calibración basada en simulación (SBC)}
-La calibración basada en simulación \citep{Talts_2018} consiste 
-en generar datos a partir del modelo generativo con parámetros 
-conocidos y verificar que el algoritmo de inferencia recupera 
-correctamente dichos parámetros. Para cada réplica, se muestrean parámetros del prior, 
-se simulan datos, se ejecuta la inferencia, y se computa el rango 
-del parámetro verdadero dentro de las muestras de la posterior. Si 
-el algoritmo está correctamente implementado y el modelo es 
-consistente, la distribución de rangos debe ser uniforme.
+Cuando el costo computacional lo permita, se utilizará la
+calibración basada en simulación \citep{Talts_2018} sobre modelos
+reducidos o versiones simplificadas del modelo generativo. Esta
+técnica consiste en generar datos a partir del modelo con parámetros
+conocidos y verificar que el algoritmo de inferencia recupera
+correctamente dichos parámetros. Para cada réplica, se muestrean
+parámetros del prior, se simulan datos, se ejecuta la inferencia, y
+se computa el rango del parámetro verdadero dentro de las muestras de
+la posterior. Si el algoritmo está correctamente implementado y el
+modelo es consistente, la distribución de rangos debe ser uniforme.
+En este proyecto, la SBC se entiende como una verificación localizada
+de la implementación y no como un requisito para todas las
+iteraciones ni para el modelo final completo.
 
 % TODO-RESULTADOS: Histograma de rangos SBC.
 % Mover a Cap. IV o anexos. Es una evidencia de validación ya
@@ -1280,15 +1307,20 @@ Este estudio se basa en dos fuentes de datos principales:
     ($G$, $G_{\text{BP}}$, $G_{\text{RP}}$) para más de mil millones
     de fuentes. Estos constituyen los datos observacionales del
     proyecto.
-    \item \textbf{GeDR3mock} \citep{Rybizki_2020}: el catálogo simulado
-    de Gaia, que reproduce las propiedades estadísticas del catálogo
-    real incluyendo ruido observacional realista, pero donde las
-    propiedades intrínsecas de cada estrella (distancia, magnitud
-    absoluta, color) son conocidas. Este catálogo se utilizará para la
-    calibración basada en simulación durante la fase de desarrollo y
-    para las evaluaciones SBC. Su uso resulta especialmente útil para
-    depurar formulaciones bajo una función de selección aproximada del
-    catálogo Gaia \citep{Everall_Boubert_2021}.
+    \item \textbf{Simulaciones oficiales de Gaia}: se emplearán las
+    simulaciones del archivo Gaia, distinguiendo una capa intrínseca
+    de referencia y una capa observacional simulada con ruido,
+    asociadas respectivamente al Gaia Universe Model Snapshot
+    \citep{Robin_2012} y al Gaia Object Generator \citep{Luri_2014}.
+    En el archivo, esta distinción puede implementarse mediante
+    tablas como \texttt{gaia\_universe\_model} y
+    \texttt{gaia\_source\_simulation}. En conjunto, estas
+    simulaciones se utilizarán para depuración del modelo,
+    comparación entre formulaciones y verificaciones en escenarios con
+    verdad conocida. En modelos reducidos, también podrán emplearse en
+    ejercicios de SBC. Su uso resulta especialmente útil para estudiar
+    formulaciones bajo una función de selección aproximada del
+    catálogo Gaia \citep{Everall_Boubert_2021,CastroGinard_2023}.
 \end{itemize}
 
 \subsection{Población y Muestra}
@@ -1299,11 +1331,14 @@ tres bandas ($G$, $G_{\text{BP}}$, $G_{\text{RP}}$). La muestra
 de trabajo se seleccionará en dos niveles:
 
 \begin{itemize}
-    \item \textbf{Muestra de desarrollo:} un subconjunto de estrellas
-    del catálogo GeDR3mock ($\sim$10\,000--50\,000 fuentes) con distancias
-    verdaderas conocidas, que cubra un rango representativo de tipos
-    estelares y niveles de señal-ruido en la paralaje, sobre el cual
-    se construirá y validará cada iteración del modelo.
+    \item \textbf{Muestra de desarrollo:} un subconjunto de fuentes
+    construido a partir de las tablas \texttt{gaia\_universe\_model}
+    y \texttt{gaia\_source\_simulation} ($\sim$10\,000--50\,000
+    fuentes), de modo que se disponga simultáneamente de observables
+    simulados y de distancias verdaderas conocidas. La muestra cubrirá
+    un rango representativo de tipos estelares y niveles de
+    señal-ruido en la paralaje, sobre el cual se construirá y
+    validará cada iteración del modelo.
     \item \textbf{Muestra observacional:} un subconjunto de estrellas
     de Gaia DR3 seleccionadas con criterios de calidad fotométrica y
     astrométrica, sobre el cual se aplicará el modelo validado. En
@@ -1500,8 +1535,9 @@ grilla de centros pero permitiendo que los pesos de mezcla se aprendan
 de los datos.
 
 \textbf{Prior del CMD.}
-Se define una grilla de $B$ componentes sobre el CMD a partir de
-GeDR3mock. Los centros $\boldsymbol{\mu}_b$ y las covarianzas base
+Se define una grilla de $B$ componentes sobre el CMD a partir de una
+muestra de desarrollo construida con las simulaciones oficiales de
+Gaia. Los centros $\boldsymbol{\mu}_b$ y las covarianzas base
 $\boldsymbol{\Sigma}^{(0)}_b$ permanecen fijos, mientras que los pesos
 de mezcla se modelan como
 \begin{align}
@@ -1637,9 +1673,11 @@ integra las herramientas de evaluación descritas en el Capítulo~II:
     se utilizará de forma selectiva, como diagnóstico de
     implementación, y no como requisito exhaustivo en todos los
     ajustes de gran tamaño.
-    \item \textbf{Ajuste a datos simulados (GeDR3mock):}
-    se aplica el modelo a una muestra del catálogo simulado donde
-    las distancias verdaderas son conocidas. Se evalúan sesgo
+    \item \textbf{Ajuste a datos simulados (simulaciones oficiales de Gaia):}
+    se aplica el modelo a una muestra construida a partir de
+    \texttt{gaia\_universe\_model} y
+    \texttt{gaia\_source\_simulation}, donde las distancias
+    verdaderas son conocidas. Se evalúan sesgo
     ($\Delta r / r$), RMSE, y cobertura de intervalos de credibilidad.
     \item \textbf{Chequeo predictivo posterior (PPC):}
     se generan datos replicados desde la posterior y se comparan con
@@ -1699,7 +1737,7 @@ bibliotecas:
     \item[\texttt{astroquery}] para la extracción de datos del
     archivo de Gaia mediante consultas ADQL.
     \item[\texttt{scikit-learn}] para el ajuste del GMM preentrenado
-    sobre el CMD de GeDR3mock.
+    sobre el CMD de la muestra de desarrollo simulada.
     \item[\texttt{Astropy}] para el manejo de coordenadas, unidades
     y tablas astronómicas.
 \end{description}
