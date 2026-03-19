@@ -309,8 +309,9 @@ fotogeométricas (paralaje + fotometría). Para ello utilizan priors
 direccionales basados en un modelo de la Galaxia (con una distribución 
 gamma generalizada) y un prior color-magnitud-distancia (CQD) 
 construido a partir del catálogo simulado GeDR3mock 
-\citep{Rybizki_2020}. Las distancias fotogeométricas son, en 
-mediana, un 40\% más precisas que las puramente geométricas.
+\citep{Rybizki_2020}. Las distancias fotogeométricas muestran,
+en general, mayor precisión que las puramente geométricas,
+especialmente para estrellas con paralajes pobres.
 
 Finalmente, \citet{Zhang_2023} amplían el alcance de la inferencia 
 bayesiana al estimar no solo distancias sino también masas y edades 
@@ -461,9 +462,11 @@ paralajes de más de mil millones de estrellas, junto con fotometría
 en tres bandas: $G$ (banda ancha, 330--1050 nm), $G_{\text{BP}}$ 
 (azul, 330--680 nm) y $G_{\text{RP}}$ (rojo, 630--1050 nm). El 
 tercer lanzamiento de datos (DR3) proporciona paralajes con 
-incertidumbres típicas de 0.02--0.03 milisegundos de arco (mas) 
-para las estrellas más brillantes ($G < 15$) hasta $\sim$1.3 mas 
-para las más débiles ($G \approx 21$) \citep{Vallenari2022GaiaDR}. 
+incertidumbres del orden de decenas de microsegundos de arco para 
+las estrellas más brillantes y del orden de milisegundos de arco en 
+el extremo más débil del catálogo, como se resume en la curva de 
+desempeño astrométrico de la colaboración Gaia 
+\citep{Vallenari2022GaiaDR}. 
 A pesar de esta precisión sin precedentes, el error fraccional 
 $\sigma_\varpi/\varpi$ sigue siendo significativo para la mayoría 
 de las fuentes del catálogo, lo que motiva el desarrollo de métodos 
@@ -498,8 +501,8 @@ de completitud y selección es importante, puesto que la inferencia
 sobre catálogos Gaia depende también de la función de selección
 observacional \citep{Everall_Boubert_2021,CastroGinard_2023}; de
 hecho, estrategias análogas de experimentación con datos simulados se
-han utilizado para estudiar el comportamiento de soluciones
-astrométricas de Gaia bajo escenarios controlados \citep{Michalik_2015}.
+han utilizado para estudiar soluciones astrométricas tempranas de
+Gaia bajo escenarios controlados \citep{Michalik_2015}.
 
 % TODO-FIGURA: Figura recomendable de propuesta.
 % Esquema del papel de las simulaciones oficiales de Gaia en el flujo
@@ -603,9 +606,11 @@ diversas correcciones estadísticas de naturaleza frecuentista:
     y su uso indiscriminado puede introducir sesgos adicionales.
 
     \item \textbf{Corrección de Smith-Eichhorn.} \citet{Smith_Eichhorn_1996} 
-    proponen una transformación de la paralaje observada que mapea 
-    los valores negativos al semieje positivo e incrementa las 
-    paralajes pequeñas. Según el análisis de \citet{luri2018gaia}, 
+    proponen dos estrategias para regularizar la estimación de
+    distancias derivadas de la paralaje: una transformación de la
+    paralaje observada y un esquema de ponderación que reduce
+    fuertemente la influencia de paralajes cercanas a cero. Según el
+    análisis de \citet{luri2018gaia}, 
     esta corrección es una ``elección arbitraria y bastante 
     enrevesada'' cuyos parámetros fueron ajustados por ensayo y 
     error. Bajo distribuciones espaciales realistas (no uniformes), 
@@ -802,7 +807,7 @@ estelares, esto significa que:
 El efecto neto es una mejora en la precisión y una reducción del 
 sesgo, particularmente para las estrellas que más lo necesitan 
 \citep{Leistedt_2017}. Este fenómeno es una propiedad general de 
-los modelos jerárquicos, demostrada formalmente en el contexto 
+los modelos jerárquicos, discutida en detalle en el contexto 
 estadístico por \citet[cap.~5]{Gelman_BDA3}.
 
 % TODO-FIGURA-OPCIONAL: Ilustración de la contracción bayesiana.
@@ -989,10 +994,13 @@ corregidos por extinción interestelar (usando los mapas de
 \citealt{edenhofer2023parsecscale}), por lo que el término
 $A_\lambda$ de la Ecuación~\ref{eq:distmod_ext} no aparece
 explícitamente en la verosimilitud. Asimismo, la paralaje observada
-puede presentar un sesgo sistemático en su punto cero
-\citep[$\sim$\!$-17$ $\mu$as en promedio;][]{Lindegren_2021}; en la
-práctica, este sesgo se corrige restándolo de $\hat{\varpi}_k$ antes de
-la inferencia.
+puede presentar un sesgo sistemático en su punto cero, dependiente
+de la magnitud, el color, la posición en el cielo y el tipo de
+solución astrométrica; para la muestra de cuásares analizada por
+\citet{Lindegren_2021}, el corrimiento mediano es de
+aproximadamente $-17$ $\mu$as. En la práctica, este sesgo se corrige
+aplicando la prescripción de punto cero correspondiente antes de la
+inferencia.
 
 \textbf{Nivel 2 --- Prior poblacional del CMD.} El prior conjunto 
 sobre la magnitud absoluta y el color se modela como una mezcla 
@@ -1786,4 +1794,3 @@ Redacción y documentación & & & $\times$ & $\times$ & $\times$ & $\times$ \\
 \bibliography{bibliography}
 
 \end{document}
-
