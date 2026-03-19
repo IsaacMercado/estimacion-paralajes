@@ -4,12 +4,12 @@
 \usepackage{marvosym}
 \usepackage{graphicx}
 \usepackage{float}
-\usepackage{natbib}
 \usepackage{pgfgantt}
 \usepackage{multirow}
 \usepackage[normalem]{ulem}
 \usepackage[spanish]{babel}
 \usepackage[document]{ragged2e}
+\usepackage{amsmath}
 
 \selectlanguage{spanish}
 
@@ -18,10 +18,9 @@
 \useunder{\uline}{\ul}{}
 
 % Portada
-\thispagestyle{empty}
 \title{
     \uppercase{\large Modelo Bayesiano Jerárquico para Mejorar las 
-    Estimaciones de Distancia Estelar a través del 
+    Estimaciones de Distancia Estelar a través del
     Diagrama Color-Magnitud}
 }
 \author{Autor: Ing. Luis Mercado}
@@ -37,19 +36,22 @@
 }
 \duedate{
     \uppercase{Mérida, Venezuela} \\ 
-    Febrero, 2024
+    Septiembre, 2025
 }
 
 \begin{document}
+\pagenumbering{gobble}
 \maketitle
+\thispagestyle{empty}
 
 % Índices
+\clearpage
 \pagenumbering{roman}
 
 % Contenido
 \renewcommand\contentsname{\large{Índice}}
-\tableofcontents
 \setcounter{tocdepth}{2}
+\tableofcontents
 \newpage
 
 % Fíguras
@@ -148,7 +150,9 @@ especial mención a la disponibilidad de datos recientes de misiones como Gaia
 de la Agencia Espacial Europea, lo que proporciona una base sólida para la
 implementación y evaluación de modelos bayesianos en el contexto estadístico.
 
-\subsection{Antecedentes de la Investigación}
+\subsection{Marco Teórico}
+
+\subsubsection{Antecedentes de la Investigación}
 
 Actualmente, contamos con una amplia gama de modelos estadísticos para
 estimar distancias estelares, pero pocas de estas técnicas usan métodos bayesianos,
@@ -176,6 +180,154 @@ de distancias estelares, sino que también estimaciones de masas y edades,
 utilizando un enfoque similar a \citet{Anderson_2017}, es decir, usan un
 modelo bayesiano empírico, usando datos de Gaia DR2. Por lo que es
 en la actualidad el trabajo más actualizado en este campo.
+
+% Esquema interno (no imprimir):
+% 2.1. Antecedentes de la Investigación
+% 2.2. Conceptos Fundamentales
+% - 2.2.1. Astronomía y Distancias Estelares
+% - 2.2.2. Paralaje y Diagrama Color-Magnitud
+% - 2.2.3. Modelos Bayesianos
+%
+% 2.3. Revisión de Métodos Existentes
+% - 2.3.1. Métodos Tradicionales para Estimación de Distancias
+% - 2.3.2. Enfoques Bayesianos en Astronomía
+% 2.4. Brechas Identificadas en la Literatura
+
+%% Este es el contenido del marco teórico, que debe ser desarrollado
+%% con base en la revisión bibliográfica realizada.
+
+%% Estas son ideas iniciales que deben ser ampliadas y referenciadas.
+
+\subsubsection{Conceptos Fundamentales}
+
+Con esta sección se pretende definir y explicar los conceptos
+básicos que se van a usar en el desarrollo de este proyecto.
+
+Antes de entrar en materia de estadística bayesiana, es importante
+entender algunos conceptos básicos de la astronomía y las distancias estelares.
+
+
+\paragraph{Distancias Estelares y Paralaje}
+La astronomía es la ciencia que estudia los cuerpos celestes y los fenómenos
+que ocurren fuera de la atmósfera terrestre. La medición de distancias estelares
+es crucial para comprender la estructura y evolución del universo. Las distancias
+estelares se miden en unidades como años luz, parsecs y unidades astronómicas.
+\citet{Carroll_Ostlie_2017} proporciona una introducción completa a los conceptos
+básicos de la astronomía, incluyendo la medición de distancias estelares.
+
+Existe una relación geométrica fundamental entre la paralaje ($\varpi$) y la distancia ($r$), que se expresa
+mediante la fórmula:
+\begin{equation}
+    r = \frac{1}{\varpi}
+\end{equation}
+donde $r$ es la distancia en parsecs y $\varpi$ es la paralaje en segundos de arco.
+
+Sin embargo, el cálculo simple de $r=1/\varpi$ (inversión ingenua) falla o 
+genera sesgos y alta varianza cuando el error fraccional del paralaje 
+($\sigma_\varpi/\varpi$) es significativo. Es crucial señalar que esto ocurre 
+en un alto porcentaje de estrellas, incluso en catálogos de alta precisión como 
+Gaia. Además, la existencia de paralajes cero o negativos son mediciones 
+físicas válidas que, no obstante, son problemáticas para la inversión 
+ingenua, lo que demuestra la necesidad de métodos de inferencia probabilística.
+
+\paragraph{El Diagrama Color-Magnitud (CMD)}
+El Diagrama Color-Magnitud (CMD o Diagrama Hertzsprung-Russell) es una 
+herramienta fundamental en astrofísica, que muestra que las estrellas se 
+agrupan en regiones compactas (secuencia principal, rama de gigantes rojas, etc.).
+
+La posición de una estrella en el CMD se relaciona con su \textbf{magnitud absoluta} 
+($M$), y cómo esta se vincula a la \textbf{magnitud aparente} ($m$) y la 
+distancia ($r$) a través de la ecuación $M=m+5-5\log_{10}(r)-A_G$. La 
+constricción natural de $M$ por el color ($C$) es la información fotométrica 
+que se utilizará como \textit{prior}. Es importante mencionar la necesidad de 
+corregir la magnitud aparente por la \textbf{extinción interestelar} ($A_G$), 
+un factor que depende de la distancia y la línea de visión.
+
+\paragraph{El Catálogo Gaia DR3}
+La misión Gaia de la Agencia Espacial Europea (ESA) y su \textit{Data Release 3 (DR3)} 
+es la fuente de datos astrométricos y fotométricos de alta precisión para más 
+de mil millones de fuentes. Para este proyecto, se utilizarán los datos de 
+\textbf{paralaje} ($\varpi$) y la \textbf{fotometría} (G, BP, RP) que son 
+cruciales para construir el CMD y la estimación de distancias.
+
+\subsubsection{Marco Metodológico Estadístico: Inferencia Bayesiana}
+
+\paragraph{Inferencia Bayesiana y su Justificación en Astrometría}
+El Teorema de Bayes es la formulación central de la inferencia bayesiana: 
+$P(\theta \mid y) \propto P(y \mid \theta)P(\theta)$, donde $\theta$ son los 
+parámetros (e.g., distancia) e $y$ son los datos (e.g., paralaje).
+
+La inferencia bayesiana es el enfoque preferido para la estimación de 
+distancias estelares, ya que maneja la incertidumbre de manera natural, no 
+desecha los paralajes negativos y produce distribuciones \textit{posteriores} 
+(PDF) completas y asimétricas, lo que es esencial cuando se trata de una 
+relación no lineal ($r=1/\varpi$).
+
+La elección del \textit{prior} ($P(\theta)$) es inevitable y su impacto es 
+mayor cuando los datos son menos informativos (alta $\sigma_\varpi/\varpi$). 
+Un prior uniforme en distancia ($P(r)=\text{const}$) resulta ser altamente 
+informativo e irrazonable físicamente, exacerbando el sesgo. Por ello, se 
+necesitan priors basados en la distribución espacial de las estrellas, como 
+el prior de densidad espacial decreciente asintóticamente (e.g., 
+exponencialmente decreciente, EDSD).
+
+\paragraph{Modelos Bayesianos Jerárquicos (HBM)}
+Un Modelo Bayesiano Jerárquico (HBM) permite inferir simultáneamente 
+parámetros individuales (e.g., la distancia de cada estrella $r_k$) y 
+parámetros poblacionales o hiperparámetros (e.g., la distribución 
+subyacente del CMD, que actúa como \textit{prior} para todas las estrellas).
+
+El HBM logra el fenómeno de \textit{Bayesian shrinkage}: la información de 
+las estrellas con mediciones precisas (alto S/N) informa la distribución 
+poblacional (el CMD sin ruido), y esta distribución poblacional \textit{contrae} 
+las estimaciones de distancia de las estrellas con mediciones ruidosas 
+(bajo S/N), mejorando su precisión.
+
+\paragraph{Inferencia y Herramientas Computacionales}
+Se utiliza Markov Chain Monte Carlo (MCMC) para resolver la integral posterior 
+compleja de los HBM. Algoritmos eficientes como el muestreo de Gibbs o los 
+métodos Hamiltonianos (HMC) son relevantes.
+
+La función de verosimilitud ($P(y \mid \theta)$) para la paralaje, 
+$P(\varpi \mid r, \sigma_\varpi)$, se modela generalmente como una distribución 
+Gaussiana. Es importante utilizar la matriz de covarianza completa en el 
+\textit{likelihood} al trabajar con múltiples parámetros (e.g., 
+$\varpi, \mu_\alpha, \mu_\delta$) para una correcta propagación de errores.
+
+\subsubsection{Modelado Jerárquico del Diagrama Color-Magnitud}
+
+\paragraph{El CMD como Prior Empírico (Data-Driven Prior)}
+El modelo a desarrollar no se basa en modelos físicos de evolución estelar 
+(\textit{ab initio}), sino en un modelo estadístico \textit{empírico} de la 
+densidad estelar en el espacio color-magnitud inferido directamente de los 
+datos ruidosos de Gaia.
+
+Para estimar el CMD libre de ruido a partir de datos ruidosos, se pueden 
+usar técnicas de \textbf{Desconvolución Extrema (Extreme Deconvolution - XD)} 
+o Modelos de Mezclas Gaussianas (Gaussian Mixture Models - GMM) dentro del 
+marco jerárquico.
+
+\subsubsection{Evaluación y Validación del Modelo}
+
+\paragraph{Métricas de Rendimiento}
+Las medidas clave para evaluar la calidad del modelo son el \textbf{sesgo y 
+la varianza} de las estimaciones de distancia en función del error fraccional 
+del paralaje, y la cuantificación del \textit{shrinkage} midiendo la mejora 
+en la precisión.
+
+\paragraph{Diagnóstico y Chequeo de Modelos (Workflow)}
+Se deben incorporar conceptos del \textit{Bayesian workflow} para la 
+verificación iterativa:
+\begin{itemize}
+    \item \textbf{Chequeo Predictivo Posterior (PPC):} para evaluar el ajuste 
+    del modelo a los datos observados.
+    \item \textbf{Validación Cruzada (Cross-Validation):} para evaluar la 
+    capacidad predictiva y prevenir el sobreajuste.
+    \item \textbf{Simulación de Datos Falsos (Fake-data simulation):} para 
+    validar que el algoritmo de inferencia recupera correctamente los 
+    parámetros conocidos.
+\end{itemize}
+
 
 \subsection{Metodología de la Investigación}
 
@@ -254,52 +406,6 @@ modelo jerárquico bayesiano es un proceso iterativo que se empieza
 con un modelo inicial simple y luego poco a poco se van agregando
 variaciones y/o correcciones tratando de encontrar el modelo
 adecuado para el problema planteado.
-
-\subsection{Cronograma de Actividades}
-
-\begin{ganttchart}[
-        vgrid,
-        hgrid,
-        % bar label font=\mdseries\small\color{black!70},
-        y unit title=1cm,
-        y unit chart=0.8cm,
-        bar label node/.append style={left=2cm},
-        bar label font=\raggedright\mdseries\small,
-        group label node/.append style={left=.6cm}
-    ]{1}{12}
-    \gantttitle{2024}{12} \\
-    \gantttitle{Abril}{4} \gantttitle{Mayo}{4} \gantttitle{Junio}{4} \\
-    \gantttitlelist{1,...,4}{1} \gantttitlelist{1,...,4}{1} \gantttitlelist{1,...,4}{1} \\
-
-    \ganttgroup{Revisión bibliográfica}{1}{2} \\
-    \ganttbar{Cálculo de distancias estelares}{1}{2} \\
-    \ganttbar{Modelos bayesianos en astronomía}{1}{2} \\
-
-    \ganttgroup{Formulación del anteproyecto}{3}{4} \\
-    \ganttbar{Planteamiento del problema}{3}{4} \\
-    \ganttbar{Objetivos}{3}{4} \\
-    \ganttbar{Justificación}{3}{4} \\
-    \ganttbar{Antecedentes}{3}{4} \\
-    \ganttbar{Marco metodológico}{3}{4} \\
-
-    \ganttgroup{Desarrollo del modelo bayesiano}{5}{7} \\
-    \ganttbar{Definición del modelo inicial}{5}{7} \\
-    \ganttbar{Ajuste (Fit) del modelo}{5}{7} \\
-    \ganttbar{Validación del modelo}{5}{7} \\
-    \ganttbar{Corrección del modelo}{5}{7} \\
-
-    \ganttgroup{Redacción del proyecto de investigación}{8}{9} \\
-    \ganttbar{Marco teórico}{8}{9} \\
-    \ganttbar{Análisis e interpretación de resultados}{8}{9} \\
-    \ganttbar{Conclusiones y recomendaciones}{8}{9} \\
-
-    \ganttgroup{Presentación y revisión}{10}{12} \\
-    \ganttbar{Revisión del proyecto con el tutor}{10}{10} \\
-    \ganttbar{Presentación de informe final}{11}{11} \\
-    \ganttbar{Exposición de los resultados}{12}{12}
-\end{ganttchart}
-
-
 
 \newpage
 % Referencias
