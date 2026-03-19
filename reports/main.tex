@@ -23,7 +23,7 @@
     Estimaciones de Distancia Estelar a través del
     Diagrama Color-Magnitud}
 }
-\author{Autor: Ing. Luis Mercado}
+\author{Br. Isaac Luis Mercado}
 \professor{Tutor: Prof. Francisco Palm}
 \authorsaffiliations{
     \uppercase{Universidad de los Andes} \\
@@ -76,8 +76,10 @@
 La determinación de distancias estelares constituye un problema
 fundamental tanto para la astronomía como para la estadística.
 Conocer con precisión las distancias a las estrellas es esencial
-para comprender la estructura y evolución de nuestra galaxia,
-y sin embargo, su medición directa presenta desafíos considerables
+para comprender la estructura y evolución de nuestra galaxia;
+por ejemplo, es crucial para derivar la cinemática estelar, 
+inferir edades y masas a través de isocronas, y caracterizar sistemas 
+exoplanetarios. Sin embargo, su medición directa presenta desafíos considerables
 que motivan el desarrollo de métodos de inferencia cada vez más
 sofisticados.
 
@@ -227,8 +229,13 @@ Esta investigación se circunscribe a los siguientes alcances:
     restringir el tamaño de la muestra analizable y el nivel de
     complejidad que pueda alcanzarse en el modelo final. El
     tratamiento de la extinción interestelar se simplificará usando
-    mapas de polvo existentes, sin modelarla como parámetro libre del
-    modelo. La modelización fotométrica principal se realizará en el
+    mapas de polvo tridimensionales existentes (evaluados en la estimación 
+    puntual de distancia $r = 1/\varpi$), asumiendo las magnitudes 
+    como perfectamente corregidas por polvo. Esta es una delimitación
+    intencional adoptada directamente de \citet{Leistedt_2017} para
+    evitar la complejidad de modelar la extinción como parámetro latente acoplado
+    a la distancia, manteniendo el enfoque en el modelo del diagrama 
+    color-magnitud. La modelización fotométrica principal se realizará en el
     espacio de magnitudes y color, usando incertidumbres derivadas de
     los errores de flujo mediante una aproximación de primer orden,
     por lo que se requerirán criterios de calidad fotométrica y se
@@ -990,8 +997,14 @@ el que se define el prior del CMD. Por tal motivo, se la deja como
 extensión conceptual y no como formulación principal del proyecto.
 
 Se asume además que las magnitudes y colores han sido previamente
-corregidos por extinción interestelar (usando los mapas de
-\citealt{edenhofer2023parsecscale}), por lo que el término
+corregidos por extinción interestelar utilizando mapas tridimensionales
+de polvo (como los de \citealt{edenhofer2023parsecscale}), evaluados 
+en la estimación puntual de distancia dada por la paralaje ($1/\hat{\varpi}$). 
+Siguiendo la metodología de \citet{Leistedt_2017}, se considerará que las 
+magnitudes están perfectamente corregidas por polvo. Si bien la extinción 
+depende de la distancia verdadera (desconocida), esta aproximación rompe 
+la circularidad del problema y evita incorporar un modelo complejo del polvo 
+galáctico dentro de la inferencia, por lo que el término
 $A_\lambda$ de la Ecuación~\ref{eq:distmod_ext} no aparece
 explícitamente en la verosimilitud. Asimismo, la paralaje observada
 puede presentar un sesgo sistemático en su punto cero, dependiente
@@ -1187,7 +1200,10 @@ modelo jerárquico son:
     de referencia (en cúmulos abiertos).
     \item \textbf{Factor de contracción (\textit{shrinkage}):}  
     cuantificación de cuánto se ``contrae'' cada estimación 
-    individual hacia la media poblacional.
+    individual hacia la media poblacional, lo cual puede aproximarse comparando
+    la varianza de las estimaciones puntuales con la varianza del modelo poblacional,
+    o mediante formulaciones análogas al parámetro de contracción en modelos
+    jerárquicos normales \citep[cap.~5]{Gelman_BDA3}.
 \end{itemize}
 
 \subsection{Definición de Términos Básicos}
