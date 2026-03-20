@@ -31,7 +31,7 @@
     \uppercase{Escuela de estadística}
 }
 \course{
-    \uppercase{Propuesta de trabajo de grado} \\
+    \uppercase{Trabajo de Grado} \\
     Para optar al título de Licenciado en Estadística
 }
 \duedate{
@@ -47,6 +47,13 @@
 % Índices
 \clearpage
 \pagenumbering{roman}
+
+\section*{Resumen}
+% TODO: Escribir el resumen del trabajo aquí (aprox. 250 palabras). Debe contener el objetivo, la metodología, los resultados principales y la conclusión.
+\vspace{1cm}
+\textbf{Palabras clave:} Estadística Bayesiana, Gaia, Distancias Estelares, Diagrama Color-Magnitud, Inferencia Variacional.
+
+\newpage
 
 % Contenido
 \renewcommand\contentsname{\large{Índice}}
@@ -207,40 +214,40 @@ Esta investigación se circunscribe a los siguientes alcances:
     edades o metalicidades.
     \item \textbf{Alcance de datos:} se utilizan datos astrométricos
     y fotométricos del catálogo Gaia DR3 (bandas $G$, $G_{\text{BP}}$,
-    $G_{\text{RP}}$). Para la fase de desarrollo se emplearán las
+    $G_{\text{RP}}$). Para la fase de desarrollo se emplearon las
     simulaciones oficiales del archivo Gaia, distinguiendo una capa
     intrínseca de referencia y una capa observacional simulada con
-    ruido. La validación se realizará sobre cúmulos abiertos
+    ruido. La validación se realizó sobre cúmulos abiertos
     seleccionados.
     \item \textbf{Alcance metodológico:} se adopta un enfoque
     bayesiano con complejidad creciente, tomando como meta conceptual
     el modelo jerárquico de \citet{Leistedt_2017}. No obstante, por
-    tratarse de un trabajo de pregrado, se priorizarán
+    tratarse de un trabajo de pregrado, se priorizaron
     implementaciones computacionalmente viables en muestras acotadas.
-    La inferencia variacional se utilizará como herramienta principal
+    La inferencia variacional se utilizó como herramienta principal
     de ajuste en los modelos aplicados, mientras que los métodos MCMC
-    y la calibración basada en simulación se reservarán para modelos
+    y la calibración basada en simulación se reservaron para modelos
     reducidos, submuestras o verificaciones puntuales donde su costo
-    sea manejable. También se permitirá comparar enfoques
+    sea manejable. También se permitió comparar enfoques
     completamente bayesianos con aproximaciones empírico-bayesianas
     cuando ello ayude a evaluar el compromiso entre rigor e
     implementabilidad.
-    \item \textbf{Limitaciones:} el costo computacional puede
+    \item \textbf{Limitaciones:} el costo computacional pudo
     restringir el tamaño de la muestra analizable y el nivel de
     complejidad que pueda alcanzarse en el modelo final. El
-    tratamiento de la extinción interestelar se simplificará usando
+    tratamiento de la extinción interestelar se simplificó usando
     mapas de polvo tridimensionales existentes (evaluados en la estimación 
     puntual de distancia $r = 1/\varpi$), asumiendo las magnitudes 
     como perfectamente corregidas por polvo. Esta es una delimitación
     intencional adoptada directamente de \citet{Leistedt_2017} para
     evitar la complejidad de modelar la extinción como parámetro latente acoplado
     a la distancia, manteniendo el enfoque en el modelo del diagrama 
-    color-magnitud. La modelización fotométrica principal se realizará en el
+    color-magnitud. La modelización fotométrica principal se realizó en el
     espacio de magnitudes y color, usando incertidumbres derivadas de
     los errores de flujo mediante una aproximación de primer orden,
-    por lo que se requerirán criterios de calidad fotométrica y se
+    por lo que se requirieron criterios de calidad fotométrica y se
     dejará un tratamiento exacto en espacio de flujos como extensión.
-    Tampoco se pretende ajustar el catálogo Gaia DR3 completo ni
+    Tampoco se pretendió ajustar el catálogo Gaia DR3 completo ni
     realizar una inferencia exacta a escala masiva, sino construir y
     evaluar una estrategia metodológica reproducible sobre muestras
     seleccionadas y una familia acotada de priors sobre el CMD.
@@ -450,7 +457,7 @@ afectando tanto la magnitud aparente como el color observado.
 La extinción depende de la distancia y de la dirección de 
 observación, y su corrección es necesaria para ubicar 
 correctamente a una estrella en el CMD. Para este proyecto, la 
-corrección de extinción se realizará mediante mapas tridimensionales 
+corrección de extinción se realizó mediante mapas tridimensionales 
 de polvo existentes, como los de \citet{Green_2019} y
 \citet{edenhofer2023parsecscale}.
 
@@ -896,7 +903,7 @@ de las trazas.
 
 \subsection{El Modelo Jerárquico del Diagrama Color-Magnitud}
 
-Esta sección describe la formulación del modelo que se pretende 
+Esta sección describe la formulación del modelo que se pretendió 
 desarrollar, basado en el trabajo de \citet{Leistedt_2017} pero
 adaptado a una familia finita de modelos semiadaptativos. La idea
 central es conservar la interpretabilidad del CMD en el espacio
@@ -952,7 +959,7 @@ donde $\sigma_{\varpi,k}$, $\sigma_{m,k}$ y $\sigma_{C,k}$ son las
 incertidumbres observacionales. En el caso fotométrico, estas no se
 tomarán como ausentes: se derivarán a partir de los fluxes reportados
 por Gaia. En particular, si $\hat{F}_{G,k}$ denota el flux observado en
-la banda $G$ y $\sigma_{F_G,k}$ su incertidumbre, se utilizará la
+la banda $G$ y $\sigma_{F_G,k}$ su incertidumbre, se utilizó la
 aproximación de primer orden
 \begin{equation}
     \sigma_{m,k} \approx \frac{2.5}{\ln 10}
@@ -1115,7 +1122,7 @@ semiadaptativo puede escribirse como
 componente de mezcla. Para la estrella individual $k$, la posterior de
 la distancia se obtiene marginalizando sobre $M_k$, $C_k$ y $z_k$.
 
-En la práctica, la inferencia no se organizará alrededor de un único
+En la práctica, la inferencia no se organizó alrededor de un único
 algoritmo universal. Los modelos reducidos y algunas submuestras
 podrán analizarse con MCMC para verificar comportamiento y comparar
 aproximaciones. Sin embargo, para el ajuste rutinario de los modelos
@@ -1155,7 +1162,7 @@ que prescribe una serie de verificaciones iterativas antes de
 confiar en los resultados de la inferencia.
 
 \subsubsection{Calibración basada en simulación (SBC)}
-Cuando el costo computacional lo permita, se utilizará la
+Cuando el costo computacional lo permita, se utilizó la
 calibración basada en simulación \citep{Talts_2018} sobre modelos
 reducidos o versiones simplificadas del modelo generativo. Esta
 técnica consiste en generar datos a partir del modelo con parámetros
@@ -1331,7 +1338,7 @@ Este estudio se basa en dos fuentes de datos principales:
     ($G$, $G_{\text{BP}}$, $G_{\text{RP}}$) para más de mil millones
     de fuentes. Estos constituyen los datos observacionales del
     proyecto.
-    \item \textbf{Simulaciones oficiales de Gaia}: se emplearán las
+    \item \textbf{Simulaciones oficiales de Gaia}: se emplearon las
     simulaciones del archivo Gaia, distinguiendo una capa intrínseca
     de referencia y una capa observacional simulada con ruido,
     asociadas respectivamente al Gaia Universe Model Snapshot
@@ -1339,7 +1346,7 @@ Este estudio se basa en dos fuentes de datos principales:
     En el archivo, esta distinción puede implementarse mediante
     tablas como \texttt{gaia\_universe\_model} y
     \texttt{gaia\_source\_simulation}. En conjunto, estas
-    simulaciones se utilizarán para depuración del modelo,
+    simulaciones se utilizaron para depuración del modelo,
     comparación entre formulaciones y verificaciones en escenarios con
     verdad conocida. En modelos reducidos, también podrán emplearse en
     ejercicios de SBC. Su uso resulta especialmente útil para estudiar
@@ -1352,7 +1359,7 @@ Este estudio se basa en dos fuentes de datos principales:
 La población de estudio está constituida por las estrellas del
 catálogo Gaia DR3 con mediciones de paralaje y fotometría en las
 tres bandas ($G$, $G_{\text{BP}}$, $G_{\text{RP}}$). La muestra
-de trabajo se seleccionará en dos niveles:
+de trabajo se seleccionó en dos niveles:
 
 \begin{itemize}
     \item \textbf{Muestra de desarrollo:} un subconjunto de fuentes
@@ -1361,11 +1368,11 @@ de trabajo se seleccionará en dos niveles:
     fuentes), de modo que se disponga simultáneamente de observables
     simulados y de distancias verdaderas conocidas. La muestra cubrirá
     un rango representativo de tipos estelares y niveles de
-    señal-ruido en la paralaje, sobre el cual se construirá y
+    señal-ruido en la paralaje, sobre el cual se construyó y
     validará cada iteración del modelo.
     \item \textbf{Muestra observacional:} un subconjunto de estrellas
     de Gaia DR3 seleccionadas con criterios de calidad fotométrica y
-    astrométrica, sobre el cual se aplicará el modelo validado. En
+    astrométrica, sobre el cual se aplicó el modelo validado. En
     particular, se exigirá flux positivo en las tres bandas y umbrales
     mínimos de señal-ruido fotométrica tales como
     $\hat{F}_G/\sigma_{F_G} > 50$,
@@ -1469,7 +1476,7 @@ las corridas de desarrollo, contrastando en submuestras con NUTS o con
 integración numérica cuando sea necesario.
 
 \textbf{Verificación (SBC).}
-Se generarán conjuntos de datos simulados a partir de las
+Se generaron conjuntos de datos simulados a partir de las
 ecuaciones~\eqref{eq:m0_prior}--\eqref{eq:m0_lik}. En una versión
 reducida del modelo, se calculará el rango del valor verdadero en las
 muestras posteriores o aproximaciones posteriores. Si la
@@ -1478,7 +1485,7 @@ implementación es correcta, la distribución de rangos será uniforme
 computacional disponible.
 
 \textbf{Evaluación (PPC).}
-Se compararán las paralajes observadas $\hat{\varpi}_k$ con las
+Se compararon las paralajes observadas $\hat{\varpi}_k$ con las
 paralajes replicadas $\hat{\varpi}_k^{\text{rep}}$ generadas desde la
 posterior. Discrepancias sistemáticas indicarán que el modelo omite
 estructura relevante de los datos.
@@ -1595,7 +1602,7 @@ modelo permite que la ocupación relativa de cada región del CMD se
 adapte a la muestra analizada.
 
 \textbf{Verificación y evaluación.}
-Se aplicarán verificaciones con datos simulados y PPC. Se evaluará si
+Se aplicaron verificaciones con datos simulados y PPC. Se evaluó si
 el aprendizaje de los pesos reduce sesgo o mejora cobertura respecto al
 Modelo~1 y respecto a una mezcla completamente fija.
 
@@ -1677,7 +1684,7 @@ prior, precisión inferencial y costo computacional.
 
 \textbf{Verificación y evaluación.}
 SBC y PPC como en las iteraciones anteriores, en la medida en que el
-costo computacional lo permita. Adicionalmente se evaluará la
+costo computacional lo permita. Adicionalmente se evaluó la
 recuperación de los pesos $\mathbf{f}$ simulados, la sensibilidad a
 $\lambda_M$ y $\lambda_C$, y la estabilidad de la inferencia en un
 espacio de parámetros de mayor dimensionalidad. La estrategia de ajuste
@@ -1694,7 +1701,7 @@ integra las herramientas de evaluación descritas en el Capítulo~II:
     se generan réplicas a partir del modelo generativo y se verifica,
     en modelos reducidos o submuestras, que la distribución de rangos
     sea aproximadamente uniforme \citep{Talts_2018}. Esta herramienta
-    se utilizará de forma selectiva, como diagnóstico de
+    se utilizó de forma selectiva, como diagnóstico de
     implementación, y no como requisito exhaustivo en todos los
     ajustes de gran tamaño.
     \item \textbf{Ajuste a datos simulados (simulaciones oficiales de Gaia):}
@@ -1726,14 +1733,14 @@ a la siguiente expansión del modelo.
 \subsection{Aplicación a datos reales y validación externa}
 
 Los modelos que superen el protocolo de validación con datos simulados
-se aplicarán a la muestra observacional de Gaia DR3. La evaluación
-final se realizará sobre estrellas del cúmulo abierto de las Pléyades
+se aplicaron a la muestra observacional de Gaia DR3. La evaluación
+final se realizó sobre estrellas del cúmulo abierto de las Pléyades
 ($\sim$136~pc), comparando las distancias estimadas por cada modelo
 con la distancia de referencia del cúmulo
 \citep{Galli_2017} y con catálogos de membresía homogéneos basados en
 Gaia \citep{CantatGaudin_2018}.
 
-Se cuantificarán:
+Se cuantificaron:
 \begin{itemize}
     \item El sesgo relativo medio $\langle (r_{\text{est}} -
     r_{\text{ref}}) / r_{\text{ref}} \rangle$.
@@ -1748,7 +1755,7 @@ Se cuantificarán:
 
 \subsection{Herramientas Computacionales}
 
-La implementación se realizará en el lenguaje Python con las siguientes
+La implementación se realizó en el lenguaje Python con las siguientes
 bibliotecas:
 \begin{description}
     \item[\texttt{PyMC}] para la especificación de los modelos
@@ -1766,43 +1773,83 @@ bibliotecas:
     y tablas astronómicas.
 \end{description}
 
-El código fuente se organizará como un paquete Python reproducible
+El código fuente se organizó como un paquete Python reproducible
 con control de versiones (Git) y gestión de entornos (Pixi/Conda).
 
-\subsection{Cronograma}
 
-\begin{table}[H]
-\centering
-\caption{Cronograma de actividades}\label{tab:cronograma}
-\begin{tabular}{lcccccc}
-\hline
-Actividad & Mes 1 & Mes 2 & Mes 3 & Mes 4 & Mes 5 & Mes 6 \\
-\hline
-Revisión bibliográfica & $\times$ & $\times$ & & & & \\
-Preparación de datos & $\times$ & $\times$ & & & & \\
-Modelo 0 (paralaje) & & $\times$ & & & & \\
-Modelo 1 (fotometría + flux) & & $\times$ & $\times$ & & & \\
-Modelo 2 (pesos flexibles) & & & $\times$ & $\times$ & & \\
-Modelo 3 (CMD semiadaptativo) & & & & $\times$ & $\times$ & \\
-Aplicación datos reales & & & & & $\times$ & \\
-Validación Pléyades & & & & & $\times$ & \\
-Redacción y documentación & & & $\times$ & $\times$ & $\times$ & $\times$ \\
-\hline
-\end{tabular}
-\end{table}
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{CAPÍTULO IV: RESULTADOS Y DISCUSIÓN}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Capítulo pendiente de desarrollo una vez completada la fase
-% de implementación y experimentación del Capítulo III.
+\subsection{Validación Interna y Diagnósticos Computacionales}
+% TODO: Presentar aquí los chequeos de convergencia de los algoritmos.
+% - Si usaste VI: Gráficos de la pérdida (ELBO) en función de las iteraciones.
+% - Si usaste MCMC (en modelos reducidos): Resumen de \hat{R}, ESS y muestras de las trazas.
+% - Calibración SBC: Breve mención o histograma mostrando la uniformidad de los rangos para verificar la implementación en PyMC.
+
+\subsection{Evaluación en Datos Simulados (Verdad Conocida)}
+% TODO: Comparar el desempeño de los Modelos 0, 1, 2 y 3 usando la muestra de desarrollo de Gaia.
+% Aquí puedes insertar gráficos de Chequeos Predictivos Posteriores (PPC) mostrando si los datos replicados coinciden con las simulaciones.
+
+\begin{table}[H]
+\centering
+\caption{Comparación de métricas de desempeño sobre la muestra simulada}\label{tab:resultados_simulados}
+\begin{tabular}{lcccc}
+\hline
+Modelo & RMSE (pc) & Sesgo Medio ($\Delta r / r$) & Cobertura (95\\,\%) & Mejora S/N \\
+\hline
+Modelo 0 (Solo Paralaje) & -- & -- & -- & Base \\
+Modelo 1 (Fotometría Indep.) & -- & -- & -- & -- \\
+Modelo 2 (CMD Pesos Flexibles) & -- & -- & -- & -- \\
+Modelo 3 (CMD Semiadaptativo) & -- & -- & -- & -- \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Aplicación a Datos Reales: Cúmulo de las Pléyades}
+% TODO: Resultados finales usando datos reales de Gaia DR3. 
+% Insertar un gráfico que muestre la contracción bayesiana (shrinkage): las estimaciones dispersas de 1/\varpi vs. las estimaciones del Modelo 3 agrupadas en ~136 pc.
+
+\begin{table}[H]
+\centering
+\caption{Estimaciones de distancia para el cúmulo de las Pléyades}\label{tab:resultados_pleyades}
+\begin{tabular}{lccc}
+\hline
+Método & Distancia Mediana (pc) & Dispersión ($\sigma_r$) & Sesgo Relativo \\
+\hline
+Referencia (Galli et al., 2017) & 136.2 & -- & -- \\
+Inversión Directa ($1/\varpi$) & -- & -- & -- \\
+Modelo 0 (EDSD) & -- & -- & -- \\
+Modelo 3 (Jerárquico Completo)& -- & -- & -- \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Discusión de Resultados}
+% TODO: Interpretar los hallazgos físicos y estadísticos. 
+% - ¿Valió la pena el aumento de complejidad computacional del Modelo 3 en comparación con el Modelo 0?
+% - Comentar sobre las limitaciones encontradas (por ejemplo, al fijar la extinción).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{CAPÍTULO V: CONCLUSIONES Y RECOMENDACIONES}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Capítulo pendiente de desarrollo tras la discusión de resultados.
+\subsection{Conclusiones}
+% TODO: Dar respuesta directa a las dos preguntas de investigación planteadas en la Introducción.
+A partir de los resultados obtenidos y del desarrollo metodológico implementado, se derivan las siguientes conclusiones:
+\begin{itemize}
+    \item \textbf{Impacto de la inclusión del CMD:} La incorporación progresiva de la información fotométrica... (completar con resultados numéricos: reducción de incertidumbre, corrección de sesgo).
+    \item \textbf{Viabilidad y complejidad modelística:} Se logró un equilibrio entre rigor estadístico y costo computacional mediante el uso de Inferencia Variacional y un modelo semiadaptativo... (completar con la experiencia práctica).
+\end{itemize}
+
+\subsection{Recomendaciones}
+% TODO: Trabajos futuros para un próximo estudiante.
+\begin{itemize}
+    \item Implementar la modelización directa en el espacio de flujos fotométricos, evitando la linealización local y la aproximación simétrica en el espacio de magnitudes.
+    \item Integrar modelos tridimensionales de polvo galáctico como parámetros latentes dentro del modelo jerárquico, resolviendo la dependencia circular entre distancia y extinción.
+    \item Extender el marco metodológico para incluir inferencia sobre otros parámetros físicos estelares o aplicar el modelo final a muestras mucho más grandes del catálogo Gaia utilizando infraestructura distribuida.
+\end{itemize}
 
 \newpage
 % Referencias
