@@ -263,7 +263,7 @@ paralaje ha sido abordado desde múltiples perspectivas a lo largo de
 la historia de la astronomía. No obstante, los enfoques bayesianos 
 aplicados a este problema son relativamente recientes y constituyen 
 una línea de investigación activa. A continuación se presentan los 
-trabajos más relevantes para esta investigación, ordenados de forma 
+trabajos más relevantes para esta investigación, organizados de manera 
 que reflejen la progresión conceptual del campo.
 
 El punto de partida conceptual es el trabajo de \citet{Bailer_2015}, 
@@ -295,8 +295,8 @@ son relevantes porque muestran que la mejora de las estimaciones no
 depende solo de abandonar la inversión directa, sino también de cómo se
 estructura la información previa sobre la población estelar.
 
-El antecedente más directamente vinculado a esta investigación es 
-el de \citet{Leistedt_2017}, quienes presentan un modelo bayesiano 
+El antecedente más estrechamente vinculado con esta investigación es 
+el trabajo de \citet{Leistedt_2017}, en el que se presenta un modelo bayesiano 
 jerárquico para la estimación de distancias estelares que aprende 
 simultáneamente la distribución del diagrama color-magnitud (CMD) 
 a partir de los datos ruidosos. Usando 1.4 millones de estrellas 
@@ -346,8 +346,8 @@ bayesiana.
 
 \subsection{Bases Teóricas}
 
-Con esta sección se definen y explican los conceptos fundamentales 
-que sustentan el desarrollo de este proyecto. Se comienza con el 
+En esta sección se definen y explican los conceptos fundamentales 
+que sustentan el desarrollo del proyecto. Se comienza con el 
 contexto astronómico necesario para comprender el problema, luego 
 se revisan los métodos existentes para estimar distancias estelares 
 --- tanto los no estadísticos como los estadísticos no bayesianos --- 
@@ -405,13 +405,13 @@ que depende de la cantidad de polvo interestelar en la línea de visión
 \citep{Carroll_Ostlie_2017}.
 
 \subsubsection{El Diagrama Color-Magnitud (CMD)}
-El Diagrama Color-Magnitud (CMD), también conocido como diagrama 
-Hertzsprung-Russell (HR), es una representación gráfica de la 
-magnitud absoluta de las estrellas en función de su color (índice 
-de color). El color de una estrella es la diferencia de magnitudes 
-en dos bandas fotométricas distintas (por ejemplo, 
-$G_{\text{BP}} - G_{\text{RP}}$ en el sistema de Gaia) y es un 
-indicador de su temperatura superficial.
+El Diagrama Color-Magnitud (CMD), también conocido como diagrama HR 
+(por Hertzsprung y Russell), es una representación gráfica de la 
+magnitud absoluta de las estrellas en función de su color (índice de 
+color). El color de una estrella es la diferencia de magnitudes en 
+dos bandas fotométricas distintas; por ejemplo, 
+$G_{\text{BP}} - G_{\text{RP}}$ en el sistema de Gaia. Este índice es 
+un indicador de su temperatura superficial.
 
 Las estrellas no se distribuyen aleatoriamente en el CMD, sino que 
 se concentran en regiones bien definidas que corresponden a 
@@ -422,8 +422,8 @@ distintas etapas evolutivas \citep{Carroll_Ostlie_2017}:
     poblada.
     \item La \textbf{rama de gigantes rojas}, formada por estrellas 
     que han agotado el hidrógeno en su núcleo.
-    \item La \textbf{rama horizontal} y el \textbf{red clump}, 
-    donde estrellas fusionan helio.
+    \item La \textbf{rama horizontal} y el \textbf{cúmulo rojo} 
+    (\textit{red clump}), en las que las estrellas fusionan helio.
     \item Las \textbf{enanas blancas}, remanentes estelares compactos 
     de baja luminosidad.
 \end{itemize}
@@ -439,11 +439,10 @@ distintas etapas evolutivas \citep{Carroll_Ostlie_2017}:
 % $M_G = G + 5\log_{10}(\varpi) - 10$,
 % graficar como scatter con densidad (hexbin o KDE 2D).
 
-Esta estructura del CMD implica que el color de una estrella 
-proporciona información sobre su magnitud absoluta probable. 
-Esta relación es la base del uso del CMD como \textit{prior} 
-informativo en los modelos bayesianos para la estimación de 
-distancias: si se conoce el color de una estrella, se puede 
+La estructura del CMD implica que el color de una estrella aporta 
+información sobre su magnitud absoluta probable; esta relación 
+fundamenta el uso del CMD como \textit{prior} informativo en los 
+modelos bayesianos para la estimación de distancias: si se conoce el color de una estrella, se puede 
 restringir el rango de magnitudes absolutas plausibles, y 
 a través del módulo de distancia (Ecuación~\ref{eq:distmod}), 
 restringir la distancia.
@@ -471,29 +470,73 @@ de polvo existentes, como los de \citet{Green_2019} y
 
 \subsubsection{La misión Gaia y el catálogo DR3}
 La misión Gaia de la Agencia Espacial Europea es un proyecto de 
-cartografía estelar que mide posiciones, movimientos propios y 
-paralajes de más de mil millones de estrellas, junto con fotometría 
-en tres bandas: $G$ (banda ancha, 330--1050 nm), $G_{\text{BP}}$ 
-(azul, 330--680 nm) y $G_{\text{RP}}$ (rojo, 630--1050 nm). El 
-tercer lanzamiento de datos (DR3) proporciona paralajes con 
-incertidumbres del orden de decenas de microsegundos de arco para 
-las estrellas más brillantes y del orden de milisegundos de arco en 
-el extremo más débil del catálogo, como se resume en la curva de 
-desempeño astrométrico de la colaboración Gaia 
-\citep{Vallenari2022GaiaDR}. 
-A pesar de esta precisión sin precedentes, el error fraccional 
-$\sigma_\varpi/\varpi$ sigue siendo significativo para la mayoría 
-de las fuentes del catálogo, lo que motiva el desarrollo de métodos 
-de inferencia sofisticados.
+cartografía estelar que observa el cielo de forma continua mediante 
+dos líneas de visión separadas por un ángulo fijo, mientras la nave 
+rota y precesa siguiendo una ley de barrido predeterminada. Como 
+resultado, cada fuente cruza repetidamente el plano focal a lo largo 
+de la misión y es registrada por varios CCD en diferentes fechas y 
+orientaciones. De estos tránsitos se obtienen mediciones elementales 
+de posición, fotometría en banda ancha $G$ y espectrofotometría de 
+baja resolución a partir de los prismas $\mathrm{BP}$ y 
+$\mathrm{RP}$, de donde se derivan las magnitudes $G_{\text{BP}}$ y 
+$G_{\text{RP}}$; para una fracción más brillante de las fuentes se 
+obtienen además espectros RVS que permiten estimar velocidades 
+radiales. En consecuencia, los valores publicados por Gaia no 
+corresponden a observaciones aisladas, sino a la combinación de un 
+gran número de mediciones repetidas y heterogéneas 
+\citep{Prusti_2016,Gaia_Collab_2017,Vallenari2022GaiaDR}.
 
-% TODO-FIGURA: Figura central de propuesta.
-% Histograma del error fraccional de la paralaje
-% ($\sigma_\varpi / \varpi$) para una muestra de Gaia DR3.
-% Marcar con línea vertical el umbral 0.2 donde la inversión
-% directa deja de ser confiable (Bailer-Jones, 2015).
-% Esta figura conecta el problema estadístico con el catálogo real.
-% Cálculo: extraer parallax y parallax\_error de Gaia, calcular
-% el cociente, graficar histograma con escala logarítmica en $y$.
+Antes de incorporarse al catálogo, estas observaciones atraviesan una 
+cadena extensa de calibración y validación. En ella se corrigen 
+efectos geométricos e instrumentales del plano focal, variaciones 
+temporales de la respuesta fotométrica y sesgos dependientes de la 
+magnitud, el color y la posición en el cielo; además, la astrometría 
+se obtiene mediante una solución global iterativa en la que se 
+ajustan conjuntamente la actitud de la nave, los parámetros de 
+calibración y los parámetros astrométricos de las fuentes 
+\citep{Prusti_2016,Lindegren_2021,Vallenari2022GaiaDR}. El tercer 
+lanzamiento de datos (DR3) proporciona así paralajes, movimientos 
+propios, fotometría y otros productos inferidos a partir de este 
+proceso de reducción masiva, con incertidumbres y, cuando 
+corresponde, covarianzas asociadas. Aunque las paralajes de las 
+fuentes más brillantes alcanzan precisiones del orden de decenas de 
+microsegundos de arco, el error fraccional $\sigma_\varpi/\varpi$ 
+sigue siendo significativo para gran parte del catálogo, y además 
+persisten errores sistemáticos residuales que exigen un tratamiento 
+estadístico cuidadoso \citep{luri2018gaia,Vallenari2022GaiaDR}. La
+Figura~\ref{fig:gaia_pipeline} resume de manera esquemática este flujo
+de producción de datos, desde el escaneo del cielo hasta la
+publicación de los productos en DR3.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance=1.25cm and 0.6cm,
+    every node/.style={font=\footnotesize},
+    etapa/.style={
+        draw,
+        rounded corners=3pt,
+        align=center,
+        text width=0.82\textwidth,
+        minimum height=1.05cm,
+        fill=gray!8
+    },
+    flecha/.style={->, thick}
+]
+\node[etapa] (scan) {\textbf{Escaneo del cielo}\\Gaia observa continuamente con dos líneas de visión y una ley de barrido que produce tránsitos repetidos de cada fuente.};
+\node[etapa, below=of scan] (ccd) {\textbf{Mediciones elementales}\\En cada tránsito, varios CCD registran posición a lo largo del barrido, fotometría $G$, espectrofotometría BP/RP y, para fuentes brillantes, espectros RVS.};
+\node[etapa, below=of ccd] (cal) {\textbf{Calibración instrumental}\\Se corrigen la geometría del plano focal, la respuesta de los CCD, el fondo, la cromaticidad y otros efectos dependientes del tiempo y del instrumento.};
+\node[etapa, below=of cal] (astro) {\textbf{Solución global iterativa}\\Se ajustan conjuntamente la actitud de la nave, los parámetros de calibración y los parámetros astrométricos de las fuentes.};
+\node[etapa, below=of astro] (dr3) {\textbf{Validación y catálogo DR3}\\Los productos finales se someten a control de calidad y se publican como paralajes, movimientos propios, fotometría, espectros y otros parámetros con sus incertidumbres.};
+
+\draw[flecha] (scan) -- (ccd);
+\draw[flecha] (ccd) -- (cal);
+\draw[flecha] (cal) -- (astro);
+\draw[flecha] (astro) -- (dr3);
+\end{tikzpicture}
+\caption{Esquema simplificado del flujo de producción de datos de Gaia, desde el escaneo del cielo hasta la publicación de productos en DR3.}
+\label{fig:gaia_pipeline}
+\end{figure}
 
 Para la fase de desarrollo y validación interna del modelo, se
 utilizarán preferentemente las simulaciones oficiales del archivo
@@ -510,10 +553,10 @@ implementación, comparar formulaciones y descartar modelos
 inadecuados en etapas tempranas del flujo bayesiano
 \citep[sec.~4.1]{gelman2020bayesian}. El uso de simulaciones no
 sustituye la aplicación a datos reales, sino que funciona como una
-etapa de depuración y validación metodológica previa. Esta dimensión
-de completitud y selección es importante, puesto que la inferencia
-sobre catálogos Gaia depende también de la función de selección
-observacional \citep{Everall_Boubert_2021,CastroGinard_2023}; de
+etapa de depuración y validación metodológica previa. La consideración
+de la completitud y de la función de selección observacional es
+importante, puesto que la inferencia sobre catálogos Gaia depende
+también de estos factores \citep{Everall_Boubert_2021,CastroGinard_2023}; de
 hecho, estrategias análogas de experimentación con datos simulados se
 han utilizado para estudiar soluciones astrométricas tempranas de
 Gaia bajo escenarios controlados \citep{Michalik_2015}.
@@ -903,7 +946,7 @@ de las trazas.
 
 \subsection{El Modelo Jerárquico del Diagrama Color-Magnitud}
 
-Esta sección describe la formulación del modelo que se pretendió 
+Esta sección describe la formulación del modelo que se propone 
 desarrollar, basado en el trabajo de \citet{Leistedt_2017} pero
 adaptado a una familia finita de modelos semiadaptativos. La idea
 central es conservar la interpretabilidad del CMD en el espacio
@@ -957,8 +1000,8 @@ como gaussianas centradas en el valor verdadero:
 \end{align}
 donde $\sigma_{\varpi,k}$, $\sigma_{m,k}$ y $\sigma_{C,k}$ son las 
 incertidumbres observacionales. En el caso fotométrico, estas no se
-tomarán como ausentes: se derivarán a partir de los fluxes reportados
-por Gaia. En particular, si $\hat{F}_{G,k}$ denota el flux observado en
+tomarán como ausentes: se derivarán a partir de los flujos reportados
+por Gaia. En particular, si $\hat{F}_{G,k}$ denota el flujo observado en
 la banda $G$ y $\sigma_{F_G,k}$ su incertidumbre, se utilizó la
 aproximación de primer orden
 \begin{equation}
@@ -990,7 +1033,7 @@ orden milimagnitud y las del color suelen ser pequeñas para la mayoría
 de las fuentes de interés.
 
 Una formulación más fiel al proceso observacional consistiría en
-modelar directamente los fluxes observados; por ejemplo,
+modelar directamente los flujos observados; por ejemplo,
 \begin{align}
     \hat{F}_{G,k} \mid F_{G,k} &\sim
         \mathcal{N}(F_{G,k}, \sigma_{F_G,k}^2), \\
@@ -1182,7 +1225,7 @@ iteraciones ni para el modelo final completo.
 
 \subsubsection{Chequeo predictivo posterior (PPC)}
 El chequeo predictivo posterior \citep[cap.~6]{Gelman_BDA3} compara 
-datos simulados desde la posterior con los datos observados. Si el modelo captura 
+datos simulados a partir de la distribución posterior con los datos observados. Si el modelo captura 
 adecuadamente la estructura de los datos, los datos replicados 
 deben ser estadísticamente indistinguibles de los datos reales. 
 Se utilizan estadísticos de resumen (distribución de paralajes, 
@@ -1254,8 +1297,8 @@ modelo jerárquico son:
     el cual las estimaciones individuales en un modelo jerárquico se 
     ``contraen'' hacia la media o estructura poblacional, mejorando 
     las estimaciones de los casos con más ruido.
-    \item[MCMC (Monte Carlo vía cadenas de Markov):] familia de 
-    algoritmos que generan muestras de una distribución de 
+    \item[MCMC:] familia de algoritmos de Monte Carlo vía cadenas de 
+    Markov que generan muestras de una distribución de 
     probabilidad construyendo una cadena de Markov cuya distribución 
     estacionaria es la distribución objetivo.
     \item[Error fraccional de la paralaje ($\sigma_\varpi / \varpi$):] 
@@ -1297,8 +1340,8 @@ a datos simulados y reales, y validación).
 
 \subsection{Diseño de la investigación}
 
-El diseño sigue el flujo de trabajo bayesiano (\textit{Bayesian
-workflow}) propuesto por \citet{gelman2020bayesian}, que establece un
+El diseño sigue el flujo de trabajo bayesiano propuesto por
+\citet{gelman2020bayesian}, que establece un
 proceso iterativo de construcción, verificación y expansión de modelos.
 En cada iteración se aplica el siguiente ciclo:
 
@@ -1323,8 +1366,8 @@ mínimo (Modelo~0) hasta alcanzar un modelo semiadaptativo delimitado
 (Modelo~3). Los Modelos~0--2 constituyen la ruta mínima de
 desarrollo y validación; el Modelo~3 incorpora la flexibilización
 adicional propuesta para el CMD, pero sin pasar a mezclas no
-paramétricas ni a componentes completamente libres. La progresión
-concreta se detalla en la
+paramétricas ni a componentes completamente libres. La progresión se
+resume a continuación y se desarrolla en la
 \hyperref[sec:iterativo]{subsección Desarrollo Iterativo del Modelo}.
 
 \subsection{Fuente de datos}
@@ -1343,8 +1386,8 @@ Este estudio se basa en dos fuentes de datos principales:
     de referencia y una capa observacional simulada con ruido,
     asociadas respectivamente al Gaia Universe Model Snapshot
     \citep{Robin_2012} y al Gaia Object Generator \citep{Luri_2014}.
-    En el archivo, esta distinción puede implementarse mediante
-    tablas como \texttt{gaia\_universe\_model} y
+    En el archivo, esta distinción puede implementarse mediante tablas
+    específicas, como \texttt{gaia\_universe\_model} y
     \texttt{gaia\_source\_simulation}. En conjunto, estas
     simulaciones se utilizaron para depuración del modelo,
     comparación entre formulaciones y verificaciones en escenarios con
@@ -1359,21 +1402,21 @@ Este estudio se basa en dos fuentes de datos principales:
 La población de estudio está constituida por las estrellas del
 catálogo Gaia DR3 con mediciones de paralaje y fotometría en las
 tres bandas ($G$, $G_{\text{BP}}$, $G_{\text{RP}}$). La muestra
-de trabajo se seleccionó en dos niveles:
+de trabajo se definió en tres niveles:
 
 \begin{itemize}
     \item \textbf{Muestra de desarrollo:} un subconjunto de fuentes
     construido a partir de las tablas \texttt{gaia\_universe\_model}
     y \texttt{gaia\_source\_simulation} ($\sim$10\,000--50\,000
     fuentes), de modo que se disponga simultáneamente de observables
-    simulados y de distancias verdaderas conocidas. La muestra cubrirá
+    simulados y de distancias verdaderas conocidas. La muestra cubrió
     un rango representativo de tipos estelares y niveles de
     señal-ruido en la paralaje, sobre el cual se construyó y
-    validará cada iteración del modelo.
+    validó cada iteración del modelo.
     \item \textbf{Muestra observacional:} un subconjunto de estrellas
     de Gaia DR3 seleccionadas con criterios de calidad fotométrica y
     astrométrica, sobre el cual se aplicó el modelo validado. En
-    particular, se exigirá flux positivo en las tres bandas y umbrales
+    particular, se exigieron flujos positivos en las tres bandas y umbrales
     mínimos de señal-ruido fotométrica tales como
     $\hat{F}_G/\sigma_{F_G} > 50$,
     $\hat{F}_{\mathrm{BP}}/\sigma_{F_{\mathrm{BP}}} > 20$ y
@@ -1400,8 +1443,8 @@ Siguiendo las recomendaciones de \citet{gelman2020bayesian}, el modelo
 se construye de forma incremental. Cada iteración añade un componente
 al modelo anterior y se somete al ciclo completo de verificación
 sugerida (SBC cuando corresponda), ajuste (VI o MCMC reducido) y
-evaluación (PPC \& diagnósticos). La tabla
-siguiente resume la progresión:
+evaluación (PPC y diagnósticos). La Tabla~\ref{tab:modelos}
+resume esta progresión:
 
 \begin{table}[H]
 \centering
@@ -1412,7 +1455,7 @@ Modelo & Datos & Prior distancia & Estructura fotométrica/CMD \\
 \hline
 0 & $\hat{\varpi}_k$ & EDSD & --- \\
 1 & $\hat{\varpi}_k$, $\hat{m}_k$, $\hat{C}_k$ & EDSD &
-    priors independientes, $\sigma$ desde flux \\
+    priors independientes, $\sigma$ desde flujos \\
 2 & $\hat{\varpi}_k$, $\hat{m}_k$, $\hat{C}_k$ & EDSD & mezcla
     finita con pesos flexibles \\
 3 & $\hat{\varpi}_k$, $\hat{m}_k$, $\hat{C}_k$ & EDSD & mezcla
@@ -1423,7 +1466,7 @@ Modelo & Datos & Prior distancia & Estructura fotométrica/CMD \\
 
 En todos los casos, la especificación se presentará con la misma
 convención: primero los datos observados, luego el modelo generativo y
-finalmente la posterior objetivo. Esta estructura replica la forma en
+finalmente la distribución posterior de interés. Esta estructura reproduce la forma en
 que los modelos se implementan en programación probabilística, donde
 la especificación generativa es el punto de partida de la inferencia.
 
@@ -1472,7 +1515,7 @@ Combinando prior y verosimilitud mediante el teorema de Bayes:
 
 Esta distribución no tiene forma cerrada; se aproximará
 numéricamente, preferiblemente mediante inferencia variacional para
-las corridas de desarrollo, contrastando en submuestras con NUTS o con
+las ejecuciones de desarrollo, contrastando en submuestras con NUTS o con
 integración numérica cuando sea necesario.
 
 \textbf{Verificación (SBC).}
@@ -1504,7 +1547,7 @@ las magnitudes aparentes y el color como datos observados adicionales,
 manteniendo priors independientes (no jerárquicos) para la magnitud
 absoluta y el color intrínseco. La novedad respecto a una formulación
 fotométrica simplificada es que las incertidumbres de magnitud y color
-se obtienen a partir de los fluxes reportados por Gaia, en lugar de
+se obtienen a partir de los flujos reportados por Gaia, en lugar de
 tratar la fotometría como exacta.
 
 \textbf{Datos observados adicionales.}
@@ -1512,9 +1555,9 @@ Además de $\hat{\varpi}_k$, se observan la magnitud aparente
 $\hat{m}_k$ (en banda $G$) con incertidumbre $\sigma_{m,k}$
 y el color $\hat{C}_k = G_{\text{BP}} - G_{\text{RP}}$ con
 incertidumbre $\sigma_{C,k}$. Estas incertidumbres se calculan a partir
-de los errores de flux según las Ecuaciones~\ref{eq:sigma_mag_flux}
+de los errores de flujo según las Ecuaciones~\ref{eq:sigma_mag_flux}
 y~\ref{eq:sigma_color_flux}. La justificación de esta decisión es
-doble: por una parte, Gaia reporta directamente fluxes y sus errores;
+doble: por una parte, Gaia reporta directamente los flujos fotométricos y sus errores;
 por otra, la muestra de trabajo se restringirá a fuentes con calidad
 fotométrica suficiente para que la aproximación gaussiana local en
 magnitudes sea razonable \citep{2021AJ....161..147B, Cox_Donnelly_2011}.
@@ -1544,16 +1587,16 @@ Se espera que la fotometría aporte restricciones adicionales sobre
 $r_k$, especialmente para estrellas con paralaje ruidosa, al vincular
 la distancia con la magnitud absoluta a través del módulo de distancia.
 Además, este modelo permite evaluar si incorporar explícitamente la
-incertidumbre fotométrica derivada del flux modifica de forma
+incertidumbre fotométrica derivada del flujo modifica de forma
 apreciable el ajuste respecto a la aproximación de magnitudes casi sin
 error. También deja explícita una delimitación importante: la
 formulación principal sigue estando en el espacio magnitud-color, y el
-tratamiento exacto en espacio de flux se reconoce como una extensión
+tratamiento exacto en espacio de flujo se reconoce como una extensión
 metodológica más fiel pero de mayor complejidad inferencial.
 
 \textbf{Verificación y evaluación.}
 Se repetirán las verificaciones que resulten factibles y los PPC. Se
-compararán las posteriors de $r_k$ con las
+compararán las distribuciones posteriores de $r_k$ con las
 del Modelo~0 para cuantificar la ganancia de información.
 
 \subsubsection{Modelo 2: CMD con pesos flexibles}
@@ -1705,10 +1748,10 @@ integra las herramientas de evaluación descritas en el Capítulo~II:
     implementación, y no como requisito exhaustivo en todos los
     ajustes de gran tamaño.
     \item \textbf{Ajuste a datos simulados (simulaciones oficiales de Gaia):}
-    se aplica el modelo a una muestra construida a partir de
+    se aplica el modelo a una muestra simulada con verdad conocida,
+    construida a partir de las tablas
     \texttt{gaia\_universe\_model} y
-    \texttt{gaia\_source\_simulation}, donde las distancias
-    verdaderas son conocidas. Se evalúan sesgo
+    \texttt{gaia\_source\_simulation}. Se evalúan sesgo
     ($\Delta r / r$), RMSE, y cobertura de intervalos de credibilidad.
     \item \textbf{Chequeo predictivo posterior (PPC):}
     se generan datos replicados desde la posterior y se comparan con
@@ -1794,15 +1837,16 @@ con control de versiones (Git) y gestión de entornos (Pixi/Conda).
 
 \begin{table}[H]
 \centering
+\small
 \caption{Comparación de métricas de desempeño sobre la muestra simulada}\label{tab:resultados_simulados}
-\begin{tabular}{lcccc}
+\begin{tabular}{@{}p{4.8cm}cccc@{}}
 \hline
-Modelo & RMSE (pc) & Sesgo Medio ($\Delta r / r$) & Cobertura (95\\,\%) & Mejora S/N \\
+Modelo & RMSE (pc) & \shortstack{Sesgo medio\\($\Delta r / r$)} & \shortstack{Cobertura\\(95\\,\%)} & \shortstack{Mejora en\\relación señal-ruido} \\
 \hline
-Modelo 0 (Solo Paralaje) & -- & -- & -- & Base \\
-Modelo 1 (Fotometría Indep.) & -- & -- & -- & -- \\
-Modelo 2 (CMD Pesos Flexibles) & -- & -- & -- & -- \\
-Modelo 3 (CMD Semiadaptativo) & -- & -- & -- & -- \\
+Modelo 0 (solo paralaje) & -- & -- & -- & Base \\
+Modelo 1 (fotometría con priors independientes) & -- & -- & -- & -- \\
+Modelo 2 (CMD con pesos flexibles) & -- & -- & -- & -- \\
+Modelo 3 (CMD semiadaptativo) & -- & -- & -- & -- \\
 \hline
 \end{tabular}
 \end{table}
@@ -1813,15 +1857,16 @@ Modelo 3 (CMD Semiadaptativo) & -- & -- & -- & -- \\
 
 \begin{table}[H]
 \centering
+\small
 \caption{Estimaciones de distancia para el cúmulo de las Pléyades}\label{tab:resultados_pleyades}
-\begin{tabular}{lccc}
+\begin{tabular}{@{}lccc@{}}
 \hline
-Método & Distancia Mediana (pc) & Dispersión ($\sigma_r$) & Sesgo Relativo \\
+Método & \shortstack{Distancia mediana\\(pc)} & \shortstack{Dispersión\\($\sigma_r$)} & Sesgo relativo \\
 \hline
-Referencia (Galli et al., 2017) & 136.2 & -- & -- \\
-Inversión Directa ($1/\varpi$) & -- & -- & -- \\
+Referencia externa & 136.2 & -- & -- \\
+Inversión directa de la paralaje ($1/\varpi$) & -- & -- & -- \\
 Modelo 0 (EDSD) & -- & -- & -- \\
-Modelo 3 (Jerárquico Completo)& -- & -- & -- \\
+Modelo 3 (CMD semiadaptativo) & -- & -- & -- \\
 \hline
 \end{tabular}
 \end{table}

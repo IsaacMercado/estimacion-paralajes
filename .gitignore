@@ -21,3 +21,12 @@ data/raw/*.vot
 data/raw/*.csv.gz
 data/raw/*.ecsv
 tmp
+
+# pixi environments
+.pixi
+*.egg-info
+
+*.exe
+*.nc
+models/**/*.csv
+reports/sources/
