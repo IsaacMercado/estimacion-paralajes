@@ -23,10 +23,12 @@ data/raw/*.ecsv
 tmp
 
 # pixi environments
-.pixi
-*.egg-info
+.pixi/*
+!.pixi/config.toml
 
 *.exe
 *.nc
 models/**/*.csv
+models/**/*.npz
 reports/sources/
+.ipynb_checkpoints

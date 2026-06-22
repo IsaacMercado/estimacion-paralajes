@@ -10,6 +10,10 @@
 \usepackage[spanish]{babel}
 \usepackage[document]{ragged2e}
 \usepackage{amsmath}
+\usepackage{tikz}
+\usetikzlibrary{positioning,shapes.geometric}
+
+\graphicspath{{figures/}}
 
 \selectlanguage{spanish}
 
@@ -19,7 +23,7 @@
 
 % Portada
 \title{
-    \uppercase{\large Modelo Bayesiano Jerárquico para Mejorar las 
+    \uppercase{\large Modelo Bayesiano Jerárquico para Mejorar las
     Estimaciones de Distancia Estelar a través del
     Diagrama Color-Magnitud}
 }
@@ -35,7 +39,7 @@
     Para optar al título de Licenciado en Estadística
 }
 \duedate{
-    \uppercase{Mérida, Venezuela} \\ 
+    \uppercase{Mérida, Venezuela} \\
     Septiembre, 2025
 }
 
@@ -84,14 +88,14 @@ La determinación de distancias estelares constituye un problema
 fundamental tanto para la astronomía como para la estadística.
 Conocer con precisión las distancias a las estrellas es esencial
 para comprender la estructura y evolución de nuestra galaxia;
-por ejemplo, es crucial para derivar la cinemática estelar, 
-inferir edades y masas a través de isocronas, y caracterizar sistemas 
+por ejemplo, es crucial para derivar la cinemática estelar,
+inferir edades y masas a través de isocronas, y caracterizar sistemas  %% TODO: Preferiblemente citar trabajos específicos que hayan utilizado distancias estelares o un trabajo en donde se mencione la importacia de las distancias y dar ejemplos de otras aplicaciones
 exoplanetarios. Sin embargo, su medición directa presenta desafíos considerables
-que motivan el desarrollo de métodos de inferencia cada vez más
+que motivan el desarrollo de métodos de calculo y/o inferencia cada vez más %% TODO: Verificar si tene sentido
 sofisticados.
 
 El método geométrico principal para estimar distancias estelares
-es la paralaje trigonométrica: el ángulo subtendido por una estrella
+es la paralaje trigonométrica, es decir, el ángulo subtendido por una estrella
 al observarla desde dos puntos opuestos de la órbita terrestre.
 La relación entre la paralaje ($\varpi$) y la distancia ($r$) es
 $r = 1/\varpi$, donde $r$ se expresa en parsecs y $\varpi$ en
@@ -104,7 +108,7 @@ paralajes nulas o negativas --- mediciones físicamente válidas ---
 no admiten inversión directa, lo que evidencia la necesidad de
 métodos probabilísticos.
 
-En lugar de abordar únicamente la paralaje, este proyecto propone
+En lugar de abordar únicamente la paralaje, este trabajo propone %% TODO: Este trabajo no propone, usa ya el metodo fotogeometrico, ademas no estoy seguro si esto deberia ir en un plantamiento del problema
 incorporar la información del diagrama color-magnitud (CMD), que
 relaciona el color y la magnitud absoluta de las estrellas. La
 conexión con la distancia se establece a través del módulo de
@@ -122,14 +126,14 @@ Aunque ya se han explorado enfoques similares en trabajos anteriores
 --- como los de \citet{Anderson_2017}, \citet{Zhang_2023} y
 \citet{2021AJ....161..147B} ---,
 este proyecto se distingue por tomar como referencia el modelo
-jerárquico de \citet{Leistedt_2017} para desarrollar una familia de
-modelos bayesianos de complejidad creciente, y por documentar de forma
-detallada el proceso iterativo de construcción, depuración y
-validación del modelo siguiendo el flujo de trabajo bayesiano
-propuesto por \citet{gelman2020bayesian}. El énfasis no estará en
-ajustar el modelo definitivo más grande posible, sino en construir una
-versión metodológicamente sólida, computacionalmente viable y útil
-para datos de Gaia en una muestra acotada.
+jerárquico de \citet{Leistedt_2017} para reconstruir una versión base
+adaptada a Gaia DR3 y estudiar una extensión mínima del prior del CMD.
+Además, se documenta de forma detallada el proceso iterativo de %% Este texto parece mas una introduccion que un planteamiento del problema
+construcción, depuración y validación del modelo siguiendo el flujo de
+trabajo bayesiano propuesto por \citet{gelman2020bayesian}. El énfasis
+no estará en ajustar el modelo definitivo más grande posible, sino en
+construir una versión metodológicamente sólida, computacionalmente
+viable y útil para datos de Gaia en una muestra acotada.
 
 En este contexto, las preguntas que orientan esta investigación son:
 \begin{itemize}
@@ -141,27 +145,30 @@ En este contexto, las preguntas que orientan esta investigación son:
     \item ¿Qué nivel de complejidad modelística puede sostenerse de
     forma computacionalmente viable dentro del marco de este
     proyecto, sin
-    perder coherencia estadística ni capacidad de validación?
+    perder coherencia estadística ni capacidad de validación? %% TODO: Aclarar pregunta, pues es confuso decir coherencia estadistica y capacidad de validacion
 \end{itemize}
 
 \subsection{Objetivos de la Investigación}
 
 \subsubsection{Objetivo general}
 
-Desarrollar y evaluar una familia de modelos bayesianos que incorpore
-progresivamente la información del diagrama color-magnitud para
-mejorar las estimaciones de distancias estelares a partir de datos de
-Gaia DR3.
+%% TODO: Revisar los objetivos
+
+Replicar, adaptar y evaluar un modelo bayesiano jerárquico para la
+estimación de distancias estelares a partir de paralajes y fotometría
+de Gaia DR3, incorporando una extensión mínima del prior del diagrama
+color-magnitud y validándola dentro de un flujo de trabajo bayesiano.
 
 \subsubsection{Objetivos específicos}
 
 \begin{itemize}
     \item Revisar la literatura sobre métodos bayesianos aplicados
     a la estimación de distancias estelares.
-    \item Formular una secuencia de modelos bayesianos de complejidad
-    creciente, desde un modelo basado solo en paralaje hasta modelos
-    que incorporen información fotométrica y estructura poblacional
-    del CMD.
+    \item Reconstruir una versión base del modelo jerárquico de
+    \citet{Leistedt_2017}, adaptada a una muestra acotada de Gaia DR3.
+    \item Proponer y justificar una extensión mínima del prior del CMD
+    mediante una flexibilización global de la dispersión de sus
+    componentes.
     \item Utilizar simulaciones oficiales de Gaia para depurar,
     comparar y descartar rápidamente formulaciones inadecuadas antes
     de su aplicación a datos observados.
@@ -173,7 +180,9 @@ Gaia DR3.
     \item Aplicar el modelo final seleccionado a una muestra acotada
     de Gaia DR3 y evaluar la mejora obtenida en las estimaciones de
     distancia utilizando cúmulos abiertos de distancia conocida como
-    referencia externa.
+    referencia externa, sin perder de vista el papel del cambio de
+    datos y de las decisiones computacionales en la viabilidad del
+    ajuste.
 \end{itemize}
 
 \subsection{Justificación de la investigación}
@@ -198,9 +207,11 @@ Por otra parte, la disponibilidad del catálogo Gaia DR3
 \citep{Vallenari2022GaiaDR} --- que proporciona paralajes y fotometría
 de alta precisión para más de mil millones de fuentes --- representa
 una oportunidad sin precedentes para aplicar y evaluar métodos
-bayesianos a escala. La posibilidad de contrastar los resultados con
-cúmulos abiertos de distancia bien establecida ofrece un marco de
+bayesianos a escala en modelos basados en datos. La posibilidad de contrastar los resultados con
+cúmulos abiertos de distancia bien establecida ofrece un marco de  %% TODO: Citar trabajos que hayan utilizado cúmulos abiertos para validar métodos de estimación de distancias, tambien revisar si esto se va a implementar en el trabajo
 validación concreto y reproducible.
+
+%% TODO: Se podria agregar otro y explicar un poco mas detalladamente los puntos de la justificacion anterior
 
 \subsection{Delimitación de la investigación}
 
@@ -217,31 +228,32 @@ Esta investigación se circunscribe a los siguientes alcances:
     $G_{\text{RP}}$). Para la fase de desarrollo se emplearon las
     simulaciones oficiales del archivo Gaia, distinguiendo una capa
     intrínseca de referencia y una capa observacional simulada con
-    ruido. La validación se realizó sobre cúmulos abiertos
+    ruido (GUMS y GOG). La validación se realizó sobre cúmulos abiertos  %% TODO: Otra vez, revisar lo de los cumulos, por los momentos deberian ser solo uno
     seleccionados.
     \item \textbf{Alcance metodológico:} se adopta un enfoque
-    bayesiano con complejidad creciente, tomando como meta conceptual
-    el modelo jerárquico de \citet{Leistedt_2017}. No obstante, por
+    bayesiano con complejidad creciente, tomando como referencia
+    principal el modelo jerárquico de \citet{Leistedt_2017}. La ruta
+    metodológica se restringe a tres formulaciones: un modelo base de %% TODO: Esto ya no va, solo seria replicar el modelo le Leistedt, pero adaptado a Gaia DR3, sin la parte de la mezcla finita, por lo que se eliminaría el segundo modelo y el tercer modelo sería la extensión mínima del modelo base
+    solo paralaje, un modelo jerárquico del CMD con mezcla finita y
+    pesos flexibles, y una única extensión mínima que introduce una
+    escala global de dispersión para los componentes del CMD. Por
     tratarse de un trabajo de pregrado, se priorizaron
     implementaciones computacionalmente viables en muestras acotadas.
     La inferencia variacional se utilizó como herramienta principal
     de ajuste en los modelos aplicados, mientras que los métodos MCMC
-    y la calibración basada en simulación se reservaron para modelos
+    y la calibración basada en simulación se reservaron para modelos  %% TODO: Verificar si se va a usar calibracion basada n simulacion
     reducidos, submuestras o verificaciones puntuales donde su costo
-    sea manejable. También se permitió comparar enfoques
-    completamente bayesianos con aproximaciones empírico-bayesianas
-    cuando ello ayude a evaluar el compromiso entre rigor e
-    implementabilidad.
+    sea manejable.
     \item \textbf{Limitaciones:} el costo computacional pudo
     restringir el tamaño de la muestra analizable y el nivel de
     complejidad que pueda alcanzarse en el modelo final. El
     tratamiento de la extinción interestelar se simplificó usando
-    mapas de polvo tridimensionales existentes (evaluados en la estimación 
-    puntual de distancia $r = 1/\varpi$), asumiendo las magnitudes 
+    mapas de polvo tridimensionales existentes (evaluados en la estimación
+    puntual de distancia $r = 1/\varpi$), asumiendo las magnitudes
     como perfectamente corregidas por polvo. Esta es una delimitación
     intencional adoptada directamente de \citet{Leistedt_2017} para
     evitar la complejidad de modelar la extinción como parámetro latente acoplado
-    a la distancia, manteniendo el enfoque en el modelo del diagrama 
+    a la distancia, manteniendo el enfoque en el modelo del diagrama
     color-magnitud. La modelización fotométrica principal se realizó en el
     espacio de magnitudes y color, usando incertidumbres derivadas de
     los errores de flujo mediante una aproximación de primer orden,
@@ -258,33 +270,34 @@ Esta investigación se circunscribe a los siguientes alcances:
 
 \subsection{Antecedentes de la Investigación}
 
-El problema de estimar distancias estelares a partir de mediciones de 
-paralaje ha sido abordado desde múltiples perspectivas a lo largo de 
-la historia de la astronomía. No obstante, los enfoques bayesianos 
-aplicados a este problema son relativamente recientes y constituyen 
-una línea de investigación activa. A continuación se presentan los 
-trabajos más relevantes para esta investigación, organizados de manera 
-que reflejen la progresión conceptual del campo.
+El problema de estimar distancias estelares a partir de mediciones de
+paralaje ha sido abordado desde múltiples perspectivas a lo largo de
+la historia de la astronomía. No obstante, los enfoques bayesianos
+aplicados a este problema son relativamente recientes y constituyen
+una línea de investigación activa. A continuación se presentan los
+trabajos más relevantes para esta investigación, organizados de manera
+que reflejen la progresión conceptual del campo.  %% TODO: Revisar o reinterpretar la frase "progresion conceptual"
 
-El punto de partida conceptual es el trabajo de \citet{Bailer_2015}, 
-quien expone de manera pedagógica por qué la simple inversión de la 
-paralaje ($r = 1/\varpi$) produce estimaciones sesgadas y de alta 
-varianza cuando el error fraccional ($\sigma_\varpi / \varpi$) supera 
-aproximadamente el 20\%, situación que afecta a cerca del 80\% de las 
-estrellas del catálogo Gaia. Este trabajo demuestra que incluso priors 
-aparentemente ``no informativos'' (como el uniforme en distancia) 
-resultan problemáticos, y propone un prior de densidad espacial 
-exponencialmente decreciente (EDSD) de la forma 
-$P(r) \propto r^2 \exp(-r/L)$, que produce estimaciones con sesgo 
+El punto de partida conceptual es el trabajo de \citet{Bailer_2015}, %% TODO: Vuelvo detallar o re explicar a que se refiere con parida "conceptual"
+quien expone de manera pedagógica por qué la simple inversión de la
+paralaje ($r = 1/\varpi$) produce estimaciones sesgadas y de alta
+varianza cuando el error fraccional ($\sigma_\varpi / \varpi$) supera
+aproximadamente el 20\%, situación que afecta a cerca del 80\% de las
+estrellas del catálogo Gaia. Este trabajo demuestra que incluso priors
+aparentemente ``no informativos'' (como el uniforme en distancia)
+resultan problemáticos, y propone un prior de densidad espacial
+exponencialmente decreciente (EDSD) de la forma
+$P(r) \propto r^2 \exp(-r/L)$, que produce estimaciones con sesgo
 mínimo incluso para errores fraccionales grandes.
 
-El trabajo de \citet{luri2018gaia} complementa el anterior al ofrecer 
-una revisión exhaustiva de los métodos existentes para estimar distancias 
-a partir de paralajes, incluyendo las correcciones clásicas de 
-\citet{Lutz_Kelker_1973} y \citet{Smith_Eichhorn_1996}, y señalando 
-sus limitaciones. Este trabajo también fundamenta la necesidad de 
-adoptar un enfoque completamente bayesiano y proporciona recomendaciones 
-prácticas para el uso de los datos de Gaia.
+El trabajo de \citet{luri2018gaia} complementa el anterior al ofrecer
+una revisión exhaustiva de los métodos existentes para estimar distancias
+a partir de paralajes, incluyendo las correcciones clásicas de
+\citet{Lutz_Kelker_1973} y \citet{Smith_Eichhorn_1996}, y señalando
+sus limitaciones. Este trabajo también fundamenta la necesidad de
+adoptar un enfoque completamente bayesiano y proporciona recomendaciones
+prácticas para el uso de los datos de Gaia. Es un trabajo completo
+que explica a detalle la problemática de la estimación de distancias a partir de paralajes.
 
 Entre estos desarrollos y el enfoque jerárquico completo se ubican los
 trabajos de \citet{Astraatmadja_BailerJones_2016a} y
@@ -295,216 +308,262 @@ son relevantes porque muestran que la mejora de las estimaciones no
 depende solo de abandonar la inversión directa, sino también de cómo se
 estructura la información previa sobre la población estelar.
 
-El antecedente más estrechamente vinculado con esta investigación es 
-el trabajo de \citet{Leistedt_2017}, en el que se presenta un modelo bayesiano 
-jerárquico para la estimación de distancias estelares que aprende 
-simultáneamente la distribución del diagrama color-magnitud (CMD) 
-a partir de los datos ruidosos. Usando 1.4 millones de estrellas 
-del catálogo TGAS con fotometría APASS, logran mejorar la relación 
-señal-ruido (S/N) de la distancia en un 19\% en promedio y reducir 
-la incertidumbre mediana en un 36\%. El 8\% de las estrellas mejoran 
-su S/N por un factor mayor a 2. Este es el enfoque que el presente 
-trabajo pretende adaptar y extender a datos de Gaia DR3.
+El antecedente más estrechamente vinculado con esta investigación es
+el trabajo de \citet{Leistedt_2017}, en el que se presenta un modelo bayesiano
+jerárquico para la estimación de distancias estelares que aprende
+simultáneamente la distribución del diagrama color-magnitud (CMD)
+a partir de los datos ruidosos. Usando 1.4 millones de estrellas
+del catálogo TGAS con fotometría APASS, logran mejorar la relación
+señal-ruido (S/N) de la distancia en un 19\% en promedio y reducir
+la incertidumbre mediana en un 36\%. El 8\% de las estrellas mejoran
+su S/N por un factor mayor a 2. Este es el enfoque que el presente
+trabajo pretende adaptar y extender a datos de Gaia DR3. No está de más
+mencionar que este es uno de los pocos trabajos que implementa un modelo
+bayesiano jerárquico completo basado solo en datos (Data-Driven) para aprender el CMD,
+sin apoyarse en modelos galácticos o simulaciones,
+lo que lo hace un referente metodológico clave.
 
-Con un enfoque complementario, \citet{Anderson_2017} proponen un 
-modelo bayesiano empírico que utiliza la técnica de Desconvolución 
-Extrema \citep[XD,][]{Bovy_2011} para construir un prior basado 
-en el CMD a partir de datos TGAS y fotometría 2MASS. Este método es computacionalmente 
-más eficiente que el modelo jerárquico completo, logrando una mejora 
-mediana de precisión de 1.2$\times$, con el 14\% de las fuentes 
-mejorando por un factor mayor a 2. Sin embargo, la aproximación 
-empírico-bayesiana que emplea no propaga completamente la 
-incertidumbre de los hiperparámetros.
+Con un enfoque complementario, \citet{Anderson_2017} proponen un
+modelo bayesiano empírico que utiliza la técnica de Desconvolución
+Extrema \citep[XD,][]{Bovy_2011} para construir un prior basado
+en el CMD a partir de datos TGAS y fotometría 2MASS. Este método es computacionalmente
+más eficiente que el modelo jerárquico completo, logrando una mejora
+mediana de precisión de 1.2$\times$, con el 14\% de las fuentes
+mejorando por un factor mayor a 2. Sin embargo, la aproximación
+empírico-bayesiana que emplea no propaga completamente la
+incertidumbre de los hiperparámetros. %% TODO: Revisar si esto lo dice Anderson_2017 y si Leistedt_2017 soluciona esto
 
-A escala masiva, \citet{2021AJ....161..147B} extienden el enfoque 
-bayesiano a los 1.47 mil millones de fuentes de Gaia EDR3, 
-proporcionando tanto distancias geométricas (solo paralaje) como 
-fotogeométricas (paralaje + fotometría). Para ello utilizan priors 
-direccionales basados en un modelo de la Galaxia (con una distribución 
-gamma generalizada) y un prior color-magnitud-distancia (CQD) 
-construido a partir del catálogo simulado GeDR3mock 
-\citep{Rybizki_2020}. Las distancias fotogeométricas muestran,
+A escala masiva, \citet{2021AJ....161..147B} extienden el enfoque
+bayesiano a los 1.47 mil millones de fuentes de Gaia EDR3,
+proporcionando tanto distancias geométricas (solo paralaje) como
+fotogeométricas (paralaje + fotometría). Para ello utilizan priors
+direccionales basados en un modelo de la Galaxia (con una distribución
+gamma generalizada) y un prior color-magnitud-distancia (CQD)
+construido a partir del catálogo simulado GeDR3mock
+\citep{Rybizki_2020}. En este trabajo las distancias fotogeométricas muestran,
 en general, mayor precisión que las puramente geométricas,
 especialmente para estrellas con paralajes pobres.
 
-Finalmente, \citet{Zhang_2023} amplían el alcance de la inferencia 
-bayesiana al estimar no solo distancias sino también masas y edades 
-estelares a partir de los espectros BP/RP de Gaia, usando un modelo 
+Finalmente, \citet{Zhang_2023} amplían el alcance de la inferencia
+bayesiana al estimar no solo distancias sino también masas y edades
+estelares a partir de los espectros BP/RP de Gaia, usando un modelo
 empírico para 220 millones de estrellas.
 
-Es importante distinguir entre los enfoques empírico-bayesianos 
---- como los de \citet{Anderson_2017}, \citet{2021AJ....161..147B} 
-y \citet{Zhang_2023}, donde los hiperparámetros del prior se 
-estiman por separado y luego se fijan --- y el enfoque completamente 
-bayesiano jerárquico de \citet{Leistedt_2017}, donde los 
-hiperparámetros del CMD se infieren conjuntamente con las 
-distancias individuales, propagando toda la incertidumbre. 
-El presente trabajo se inscribe en esta segunda línea: un modelo 
-donde todos los parámetros, tanto individuales como poblacionales, 
-se actualizan simultáneamente dentro del marco de inferencia 
+Es importante distinguir entre los enfoques empírico-bayesianos
+--- como los de \citet{Anderson_2017}, \citet{2021AJ....161..147B}
+y \citet{Zhang_2023}, donde los hiperparámetros del prior se
+estiman por separado y luego se fijan --- y el enfoque completamente
+bayesiano jerárquico de \citet{Leistedt_2017}, donde los
+hiperparámetros del CMD se infieren conjuntamente con las
+distancias individuales, propagando toda la incertidumbre.
+El presente trabajo se inscribe en esta segunda línea: un modelo
+donde todos los parámetros, tanto individuales como poblacionales,
+se actualizan simultáneamente dentro del marco de inferencia
 bayesiana.
 
 \subsection{Bases Teóricas}
 
-En esta sección se definen y explican los conceptos fundamentales 
-que sustentan el desarrollo del proyecto. Se comienza con el 
-contexto astronómico necesario para comprender el problema, luego 
-se revisan los métodos existentes para estimar distancias estelares 
---- tanto los no estadísticos como los estadísticos no bayesianos --- 
-y finalmente se presentan las bases de la inferencia bayesiana y los 
-modelos jerárquicos que constituyen el núcleo metodológico de la 
+En esta sección se definen y explican los conceptos fundamentales
+que sustentan el desarrollo del proyecto. Se comienza con el
+contexto astronómico necesario para comprender el problema,
+continua una descripción de Gaia para dar un marco de los datos
+y los errores de medición, luego %% TODO: Revisar despues si es reelevante explicar otros metodos de calculo
+se revisan los métodos existentes para estimar distancias estelares ,
+y finalmente se presentan las bases de la inferencia bayesiana y los
+modelos jerárquicos que constituyen el núcleo metodológico de la
 investigación.
 
 \subsubsection{Distancias estelares y paralaje trigonométrica}
-La medición de distancias estelares es uno de los problemas más 
-antiguos y fundamentales de la astronomía 
-\citep{Carroll_Ostlie_2017}. Las distancias se expresan comúnmente 
-en \textit{parsecs} (pc), donde 1 parsec equivale a la distancia a 
-la cual una unidad astronómica (la distancia media Tierra-Sol) 
+
+La medición de distancias estelares es uno de los problemas más %% TODO: Mejorar esta explicacion
+antiguos y fundamentales de la astronomía
+\citep{Carroll_Ostlie_2017}. Las distancias se expresan comúnmente
+en \textit{parsecs} (pc), donde 1 parsec equivale a la distancia a
+la cual una unidad astronómica (la distancia media Tierra-Sol)
 subtiende un ángulo de un segundo de arco.
 
-La paralaje trigonométrica ($\varpi$) es el método geométrico 
-directo para medir distancias estelares. Aprovecha el desplazamiento 
-aparente de una estrella al observarla desde dos puntos opuestos de 
-la órbita terrestre, separados por 2 unidades astronómicas. La 
+La paralaje trigonométrica ($\varpi$) es el método geométrico
+directo para medir distancias estelares. Aprovecha el desplazamiento
+aparente de una estrella al observarla desde dos puntos opuestos de
+la órbita terrestre, separados por 2 unidades astronómicas (U.A.). La
 relación fundamental es:
 \begin{equation}
     r = \frac{1}{\varpi}
     \label{eq:parallax}
 \end{equation}
-% TODO-FIGURA: Figura central de propuesta.
-% Esquema geométrico de la paralaje trigonométrica.
-% Dibujar la Tierra en dos posiciones opuestas de su órbita, el Sol
-% en el centro, y una estrella distante. Indicar el ángulo $\varpi$,
-% la línea base de 1 UA, y la relación $r = 1/\varpi$.
-% Conviene porque facilita la lectura a jurados no astronómicos.
-% Cálculo: diagrama estático (TikZ o imagen externa).
-donde $r$ es la distancia en parsecs y $\varpi$ la paralaje en 
-segundos de arco. Esta relación es exacta en ausencia de error de 
-medición; el problema surge cuando $\varpi$ contiene ruido, como se 
+donde $r$ es la distancia en parsecs y $\varpi$ la paralaje en
+segundos de arco. Esta relación es exacta en ausencia de error de
+medición; el problema surge cuando $\varpi$ contiene ruido, como se
 discute en la sección sobre métodos de corrección.
 
-\subsubsection{El módulo de distancia}
-La magnitud aparente ($m$) de una estrella --- su brillo observado 
-desde la Tierra --- se relaciona con su magnitud absoluta ($M$) 
---- su brillo intrínseco si estuviera a 10 pc --- mediante la 
-ecuación del módulo de distancia:
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{trigonometric_parallax.pdf}
+    \caption{
+        Esquema para la medición de la paralaje trigonométrica.
+        Al observar la posición aparente de una estrella cercana ``P''
+        frente a un grupo de estrellas del fondo en dos puntos
+        opuestos de la órbita de la Tierra (separados por 2 U.A. y 6 meses),
+        es posible calcular el ángulo de paralaje de 1 segundo de arco.}
+    \label{fig:trigonometric_parallax}
+\end{figure}
+La figura~\ref{fig:trigonometric_parallax} ilustra este concepto, mostrando cómo
+la estrella cercana ``P'' se desplaza frente a las estrellas de fondo al observarla
+desde dos puntos opuestos de la órbita terrestre. La medición de este desplazamiento
+angular permite calcular la paralaje y, por ende, la distancia.
+
+\subsubsection{El módulo de distancia} %% Verificar si el contenido es adecuado al contenido
+
+Para entender la conexión entre la paralaje y el diagrama color-magnitud,
+es necesario introducir el concepto de magnitud estelar.
+
+Una estrella es (de forma simple) un reactor de fusión nuclear que emite energía
+en forma de fotones en todas direcciones. A medida que esa luz
+viaja por el espacio, la "esfera" de luz se va expandiendo. De esta manera, la
+cantidad de luz que llega a un observador en la Tierra depende de la
+distancia a la estrella: cuanto más lejos esté, menos luz llegará por unidad de área. %% Explicar mejor el texto y conectarlo mejor con la definicion de magnitud aparente
+
+En este orden de ideas, la magnitud aparente ($m$) de una estrella
+es una medida logarítmica de su brillo observado desde la Tierra,
+mientras que la magnitud absoluta ($M$) es el brillo intrínseco
+que tendría la estrella si estuviera a una distancia estándar de
+10 parsecs. La relación entre estas dos magnitudes y la distancia
+se expresa mediante la ecuación del módulo de distancia:
 \begin{equation}
     m - M = 5\log_{10}(r) - 5
     \label{eq:distmod}
 \end{equation}
-Esta ecuación establece la conexión central entre observables 
-fotométricos y la distancia. En presencia de extinción interestelar, 
+Esta ecuación establece la conexión central entre observables
+fotométricos y la distancia. En presencia de extinción interestelar,
 la ecuación se modifica a:
 \begin{equation}
     m - M = 5\log_{10}(r) - 5 + A_\lambda
     \label{eq:distmod_ext}
 \end{equation}
-donde $A_\lambda$ es la extinción en la banda fotométrica $\lambda$, 
-que depende de la cantidad de polvo interestelar en la línea de visión 
+donde $A_\lambda$ es la extinción en la banda fotométrica $\lambda$,
+que depende de la cantidad de polvo interestelar en la línea de visión
 \citep{Carroll_Ostlie_2017}.
 
 \subsubsection{El Diagrama Color-Magnitud (CMD)}
-El Diagrama Color-Magnitud (CMD), también conocido como diagrama HR 
-(por Hertzsprung y Russell), es una representación gráfica de la 
-magnitud absoluta de las estrellas en función de su color (índice de 
-color). El color de una estrella es la diferencia de magnitudes en 
-dos bandas fotométricas distintas; por ejemplo, 
-$G_{\text{BP}} - G_{\text{RP}}$ en el sistema de Gaia. Este índice es 
-un indicador de su temperatura superficial.
+El Diagrama Color-Magnitud (CMD), también conocido como diagrama HR
+(por Hertzsprung y Russell), es una representación gráfica de la
+magnitud absoluta de las estrellas en función de su color (índice de
+color). El color de una estrella es la diferencia de magnitudes en
+dos bandas fotométricas distintas; por ejemplo,
+$G_{\text{BP}} - G_{\text{RP}}$ en el sistema de Gaia. Este índice es
+un indicador de su temperatura superficial. %% TODO: Se puede explicar mejor
 
-Las estrellas no se distribuyen aleatoriamente en el CMD, sino que 
-se concentran en regiones bien definidas que corresponden a 
+Para determinar el color de una estrella, las observaciones se
+realizan utilizando bandas fotométricas. Estas bandas funcionan a través de
+filtros que cumplen con el proceso de aislar y permitir el paso de la luz
+únicamente dentro de un rango específico de longitudes de onda, bloqueando
+el resto del espectro. Al medir y comparar el brillo continuo de la estrella
+a través de dos filtros distintos (por ejemplo, uno que deje pasar luz azul
+y otro luz roja), se obtiene una diferencia de magnitudes que define
+cuantitativamente su índice de color.
+
+Las estrellas no se distribuyen aleatoriamente en el CMD, sino que
+se concentran en regiones bien definidas que corresponden a
 distintas etapas evolutivas \citep{Carroll_Ostlie_2017}:
 \begin{itemize}
-    \item La \textbf{secuencia principal}, donde las estrellas 
-    fusionan hidrógeno en su núcleo. Es la región más densamente 
+    \item La \textbf{secuencia principal}, donde las estrellas
+    fusionan hidrógeno en su núcleo. Es la región más densamente
     poblada.
-    \item La \textbf{rama de gigantes rojas}, formada por estrellas 
+    \item La \textbf{rama de gigantes rojas}, formada por estrellas
     que han agotado el hidrógeno en su núcleo.
-    \item La \textbf{rama horizontal} y el \textbf{cúmulo rojo} 
+    \item La \textbf{rama horizontal} y el \textbf{cúmulo rojo}
     (\textit{red clump}), en las que las estrellas fusionan helio.
-    \item Las \textbf{enanas blancas}, remanentes estelares compactos 
+    \item Las \textbf{enanas blancas}, remanentes estelares compactos
     de baja luminosidad.
 \end{itemize}
 
-% TODO-FIGURA: Figura central de propuesta.
-% Diagrama Color-Magnitud (CMD) observado.
-% Eje x: $G_{\text{BP}} - G_{\text{RP}}$, eje y: $M_G$ (invertido).
-% Etiquetar: secuencia principal, gigantes rojas, enanas blancas.
-% Esta figura justifica por qué el color aporta información sobre la
-% magnitud absoluta y, por tanto, sobre la distancia.
-% Cálculo: extraer $\sim$50\,000 fuentes de las simulaciones
-% oficiales de Gaia con paralaje $\text{S/N} > 10$, calcular
-% $M_G = G + 5\log_{10}(\varpi) - 10$,
-% graficar como scatter con densidad (hexbin o KDE 2D).
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{cmd.pdf}
+    \caption{
+        Diagrama Color-Magnitud (CMD) observado a partir de una muestra de
+        fuentes de Gaia DR3. Se aprecia la fuerte relación entre el índice de color
+        $(G_{\text{BP}} - G_{\text{RP}})$ y la magnitud absoluta $M_G$. Se indican
+        las principales regiones evolutivas: la secuencia principal, la rama de
+        gigantes rojas y las enanas blancas.
+    }
+    \label{fig:cmd_observado}
+\end{figure}
 
-La estructura del CMD implica que el color de una estrella aporta 
-información sobre su magnitud absoluta probable; esta relación 
-fundamenta el uso del CMD como \textit{prior} informativo en los 
-modelos bayesianos para la estimación de distancias: si se conoce el color de una estrella, se puede 
-restringir el rango de magnitudes absolutas plausibles, y 
-a través del módulo de distancia (Ecuación~\ref{eq:distmod}), 
+La estructura del CMD implica que el color de una estrella aporta %% TODO: Este texto debe ser más claro, ademas no tengo claro que tenga relacion con el objetivo
+información sobre su magnitud absoluta probable; esta relación
+fundamenta el uso del CMD como \textit{prior} informativo en los
+modelos bayesianos para la estimación de distancias: si se conoce el color de una estrella, se puede
+restringir el rango de magnitudes absolutas plausibles, y %% TODO: Esta parte es confusa, es realmente necesaria?
+a través del módulo de distancia (Ecuación~\ref{eq:distmod}),
 restringir la distancia.
 
 \subsubsection{Extinción interestelar}
-La extinción interestelar es la atenuación de la luz estelar 
-causada por la absorción y dispersión del polvo y gas presentes 
-en el medio interestelar. Este efecto hace que las estrellas 
-aparezcan más tenues y más rojas de lo que realmente son, 
-afectando tanto la magnitud aparente como el color observado. 
-La extinción depende de la distancia y de la dirección de 
-observación, y su corrección es necesaria para ubicar 
-correctamente a una estrella en el CMD. Para este proyecto, la 
-corrección de extinción se realizó mediante mapas tridimensionales 
+La extinción interestelar es la atenuación de la luz estelar
+causada por la absorción y dispersión del polvo y gas presentes
+en el medio interestelar. Este efecto hace que las estrellas
+aparezcan más tenues y más rojas de lo que realmente son,
+afectando tanto la magnitud aparente como el color observado.
+La extinción depende de la distancia y de la dirección de
+observación, y su corrección es necesaria para ubicar
+correctamente a una estrella en el CMD. Para este proyecto, la
+corrección de extinción se realizó mediante mapas tridimensionales
 de polvo existentes, como los de \citet{Green_2019} y
 \citet{edenhofer2023parsecscale}.
 
-% TODO-FIGURA: Figura recomendable de propuesta.
-% Efecto conceptual de la extinción sobre el CMD.
-% Mostrar una estrella desplazándose en color y magnitud por efecto
-% del polvo, idealmente con un vector de enrojecimiento sobre un CMD
-% simplificado. No hace falta usar datos reales; basta un esquema.
-% Conviene porque este supuesto metodológico afecta directamente la
-% interpretación del prior fotométrico.
+\begin{figure}[H]
+    \centering
+    \includegraphics{efecto_extincion.pdf}
+    \caption{Efecto conceptual de la extinción interestelar sobre el diagrama color-magnitud. El vector de enrojecimiento desplaza las características fotométricas intrínsecas de la estrella originando una medición enrojecida y atenuada.}
+    \label{fig:efecto_extincion}
+\end{figure}
 
 \subsubsection{La misión Gaia y el catálogo DR3}
-La misión Gaia de la Agencia Espacial Europea es un proyecto de 
-cartografía estelar que observa el cielo de forma continua mediante 
-dos líneas de visión separadas por un ángulo fijo, mientras la nave 
-rota y precesa siguiendo una ley de barrido predeterminada. Como 
-resultado, cada fuente cruza repetidamente el plano focal a lo largo 
-de la misión y es registrada por varios CCD en diferentes fechas y 
-orientaciones. De estos tránsitos se obtienen mediciones elementales 
-de posición, fotometría en banda ancha $G$ y espectrofotometría de 
-baja resolución a partir de los prismas $\mathrm{BP}$ y 
-$\mathrm{RP}$, de donde se derivan las magnitudes $G_{\text{BP}}$ y 
-$G_{\text{RP}}$; para una fracción más brillante de las fuentes se 
-obtienen además espectros RVS que permiten estimar velocidades 
-radiales. En consecuencia, los valores publicados por Gaia no 
-corresponden a observaciones aisladas, sino a la combinación de un 
-gran número de mediciones repetidas y heterogéneas 
+La misión Gaia de la Agencia Espacial Europea es un proyecto de
+cartografía estelar que observa el cielo de forma continua mediante
+dos líneas de visión separadas por un ángulo fijo, mientras la nave
+rota y precesa siguiendo una ley de barrido predeterminada. Como %% TODO: Explicar mejor, cobre todo terminos como precesa y ley de barrido
+resultado, cada fuente cruza repetidamente el plano focal a lo largo
+de la misión y es registrada por varios CCD (Dispositivos de captura de fotones) en diferentes fechas y
+orientaciones. De estos tránsitos se obtienen mediciones elementales
+de posición, fotometría en banda ancha $G$ y espectrofotometría de
+baja resolución a partir de los prismas $\mathrm{BP}$ (Blue Photometer) y
+$\mathrm{RP}$ (Red Photometer). La banda $G$ cubre un amplio rango
+del espectro visible (aproximadamente entre 330 y 1050 nm) y se utiliza
+para determinar el brillo general de la estrella y realizar las
+mediciones astrométricas. Por su parte, la luz que pasa a través
+del prisma BP se centra en longitudes de onda más cortas (330-680 nm),
+mientras que la que pasa por el prisma RP abarca longitudes de onda
+más largas (640-1050 nm) que penetran más en el infrarrojo cercano. %% TODO: Citar fuentes que describan las bandas fotométricas de Gaia, como el manual de usuario o artículos técnicos específicos sobre la instrumentación de Gaia.
+De la integración de estos espectros se derivan las magnitudes
+$G_{\text{BP}}$ y $G_{\text{RP}}$, cuya diferencia
+($G_{\text{BP}} - G_{\text{RP}}$) proporciona el índice de color
+estándar de Gaia empleado en esta investigación; para una fracción más brillante de las fuentes se
+obtienen además espectros RVS que permiten estimar velocidades %% TODO: En este contexto es necesario hablar de distancias radiales?
+radiales. En consecuencia, los valores publicados por Gaia no
+corresponden a observaciones aisladas, sino a la combinación de un
+gran número de mediciones repetidas y heterogéneas
 \citep{Prusti_2016,Gaia_Collab_2017,Vallenari2022GaiaDR}.
 
-Antes de incorporarse al catálogo, estas observaciones atraviesan una 
-cadena extensa de calibración y validación. En ella se corrigen 
-efectos geométricos e instrumentales del plano focal, variaciones 
-temporales de la respuesta fotométrica y sesgos dependientes de la 
-magnitud, el color y la posición en el cielo; además, la astrometría 
-se obtiene mediante una solución global iterativa en la que se 
-ajustan conjuntamente la actitud de la nave, los parámetros de 
-calibración y los parámetros astrométricos de las fuentes 
-\citep{Prusti_2016,Lindegren_2021,Vallenari2022GaiaDR}. El tercer 
-lanzamiento de datos (DR3) proporciona así paralajes, movimientos 
-propios, fotometría y otros productos inferidos a partir de este 
-proceso de reducción masiva, con incertidumbres y, cuando 
-corresponde, covarianzas asociadas. Aunque las paralajes de las 
-fuentes más brillantes alcanzan precisiones del orden de decenas de 
-microsegundos de arco, el error fraccional $\sigma_\varpi/\varpi$ 
-sigue siendo significativo para gran parte del catálogo, y además 
-persisten errores sistemáticos residuales que exigen un tratamiento 
+Antes de incorporarse al catálogo, estas observaciones atraviesan una
+cadena extensa de calibración y validación. En ella se corrigen
+efectos geométricos e instrumentales del plano focal, variaciones
+temporales de la respuesta fotométrica y sesgos dependientes de la
+magnitud, el color y la posición en el cielo; además, la astrometría
+se obtiene mediante una solución global iterativa en la que se
+ajustan conjuntamente la actitud de la nave, los parámetros de %% TODO: actitud de la nave?
+calibración y los parámetros astrométricos de las fuentes %% TODO: Citar directamente la traduccion del texto
+\citep{Prusti_2016,Lindegren_2021,Vallenari2022GaiaDR}. El tercer
+lanzamiento de datos (DR3) proporciona así paralajes, movimientos
+propios, fotometría y otros productos inferidos a partir de este
+proceso de reducción masiva, con incertidumbres y, cuando
+corresponde, covarianzas asociadas. Aunque las paralajes de las
+fuentes más brillantes alcanzan precisiones del orden de decenas de
+microsegundos de arco, el error fraccional $\sigma_\varpi/\varpi$
+sigue siendo significativo para gran parte del catálogo, y además
+persisten errores sistemáticos residuales que exigen un tratamiento
 estadístico cuidadoso \citep{luri2018gaia,Vallenari2022GaiaDR}. La
-Figura~\ref{fig:gaia_pipeline} resume de manera esquemática este flujo
+Figura~\ref{fig:gaia_pipeline} resume de manera esquemática este flujo %% TODO: De donde sale la figura?
 de producción de datos, desde el escaneo del cielo hasta la
 publicación de los productos en DR3.
 
@@ -541,9 +600,9 @@ publicación de los productos en DR3.
 Para la fase de desarrollo y validación interna del modelo, se
 utilizarán preferentemente las simulaciones oficiales del archivo
 Gaia. En particular, se distinguirá una capa intrínseca de
-referencia, asociada al Gaia Universe Model Snapshot
+referencia, asociada al Gaia Universe Model Snapshot (GUMS)
 \citep{Robin_2012}, y una capa observacional simulada con ruido,
-generada con el Gaia Object Generator \citep{Luri_2014}. En el
+generada con el Gaia Object Generator (GOG) \citep{Luri_2014}. En el
 archivo Gaia, esta separación se materializa en tablas como
 \texttt{gaia\_universe\_model} y
 \texttt{gaia\_source\_simulation}. Esta separación entre ``verdad''
@@ -551,7 +610,7 @@ y ``observación simulada'' permite trabajar en escenarios con verdad
 conocida para detectar errores de
 implementación, comparar formulaciones y descartar modelos
 inadecuados en etapas tempranas del flujo bayesiano
-\citep[sec.~4.1]{gelman2020bayesian}. El uso de simulaciones no
+\citep[sec.~4.1]{gelman2020bayesian}. El uso de simulaciones no %% TODO: Abra problemas si introducimos explicaciones de la metodología aca?
 sustituye la aplicación a datos reales, sino que funciona como una
 etapa de depuración y validación metodológica previa. La consideración
 de la completitud y de la función de selección observacional es
@@ -561,153 +620,156 @@ hecho, estrategias análogas de experimentación con datos simulados se
 han utilizado para estudiar soluciones astrométricas tempranas de
 Gaia bajo escenarios controlados \citep{Michalik_2015}.
 
-% TODO-FIGURA: Figura recomendable de propuesta.
-% Esquema del papel de las simulaciones oficiales de Gaia en el flujo
-% de trabajo. Mostrar: Gaia DR3 observado, capa intrínseca de
-% referencia y capa observacional simulada,
-% depuración del modelo, comparación entre formulaciones y selección
-% del modelo final. Puede ser un diagrama simple, no un resultado.
-% Conviene porque aclara por qué la simulación no es un añadido, sino
-% una pieza central de la estrategia metodológica.
+\begin{figure}[H]
+    \centering
+    \includegraphics{flujo_simulaciones.pdf}
+    \caption{El papel de las simulaciones y el desarrollo iterativo sobre datos de Gaia.}
+    \label{fig:flujo_simulaciones}
+\end{figure}
+
+\subsubsection{Medición de paralajes}
+
+De manera simplificada y tomando como referencia a \citet{luri2018gaia},
+la paralaje no se mide como una distancia directa,
+sino que se estima al ajustar un modelo a muchas observaciones de
+la posición aparente de una fuente en el cielo. Ese modelo debe
+explicar simultáneamente varios efectos, entre ellos el movimiento
+propio y la oscilación anual asociada al movimiento del observador.
+En forma compacta, una versión de este modelo puede escribirse como
+%
+\begin{equation}
+    \mathbf{u}(t) = \langle \mathbf{r} + (t_\mathrm{B}-t_\mathrm{ep})
+    (\mathbf{p}\mu_{\alpha*} + \mathbf{q}\mu_\delta + \mathbf{r}\mu_r) -
+    \varpi\mathbf{b}_\mathrm{O}(t)/A_\mathrm{u} \rangle\,,
+  \label{eq:sourcemodel}
+\end{equation}
+%
+Para esta discusión no es necesario analizar cada término en detalle.
+Lo importante es notar que la paralaje $\varpi$ aparece como un
+parámetro dentro de un modelo más amplio, y su valor se obtiene
+a partir de un ajuste a datos ruidosos. Para mas detalle sobre el
+modelo de fuente y su ajuste, se recomienda revisar la sección 3.3
+de \citet{luri2018gaia}.
+
+Desde el punto de vista estadístico, la cantidad reportada
+en el catálogo es una estimación observada $\hat{\varpi}$, no
+la paralaje verdadera. Si el error de medición es pequeño respecto
+a la señal, entonces $\hat{\varpi}$ suele quedar cerca del valor
+real. Pero cuando el ruido es del mismo orden de magnitud que
+la señal, el ajuste puede producir valores cercanos a cero o
+incluso negativos. Esto no significa que la distancia física sea
+negativa; significa únicamente que, dadas las observaciones disponibles,
+el valor estimado de la paralaje quedó del lado negativo de cero.
+
+En otras palabras, una paralaje negativa es una consecuencia
+natural de estimar un parámetro pequeño con incertidumbre. Forzar
+todas las estimaciones a ser positivas introduciría sesgos
+artificiales en el catálogo. Por eso, en astrometría, permitir
+paralajes observadas negativas es estadísticamente más correcto
+que truncarlas. La implicación práctica es que la distancia no
+debe obtenerse invirtiendo mecánicamente la paralaje observada,
+sino mediante un procedimiento de inferencia que incorpore su
+incertidumbre y, cuando sea pertinente, información adicional.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=1.00\columnwidth]{minimum_parallax_solution.pdf}
+    \caption{Ejemplo de una paralaje negativa que surge del procesamiento astrométrico
+        de los datos. Las líneas azules continuas representan la trayectoria verdadera
+        del objeto; los puntos rojos, las mediciones individuales de la posición
+        de la fuente en el cielo; y las líneas naranjas discontinuas, la trayectoria
+        de la fuente según la solución astrométrica por mínimos cuadrados, que en
+        este caso presenta una paralaje negativa. {\bf Izquierda:} Trayectoria en
+        el cielo que muestra el efecto del movimiento propio (tendencia lineal) y
+        de la paralaje (bucles). {\bf Derecha:} Ascensión recta y declinación de la  %% TODO: Explicar que es ascensión recta y declinación, o al menos dar una idea de que son coordenadas en el cielo.
+        fuente como función del tiempo. En la solución ajustada, el efecto de paralaje
+        negativa es equivalente a un movimiento anual de la estrella en dirección opuesta
+        al verdadero movimiento paraláctico (lo que produce un desfase de $\pi$ en las
+        curvas sinusoidales de los paneles derechos). Las barras de error indican una
+        incertidumbre de medición de $0.7$ mas; se asume que las incertidumbres en
+        $\Delta\alpha*$ y $\Delta\delta$ no están correlacionadas.
+        Figura extraída de \citet{luri2018gaia}.}
+  \label{fig:path}
+\end{figure}
+
+La Figura~\ref{fig:path} resume esta idea: con suficiente ruido, el
+ajuste puede favorecer una solución con paralaje negativa aun cuando
+la fuente tenga una distancia física positiva. Por eso, una paralaje
+negativa no debe interpretarse como un absurdo físico, sino como una
+observación incierta que exige un tratamiento inferencial adecuado.
+
 
 \subsection{Métodos de Estimación de Distancias Estelares}
 
-Antes de presentar el enfoque bayesiano, es pertinente revisar los 
-métodos existentes para estimar distancias estelares, tanto los que 
-no dependen de herramientas estadísticas como los que emplean 
-correcciones estadísticas no bayesianas. Esta revisión permite 
-contextualizar la contribución de los modelos jerárquicos bayesianos 
+Antes de presentar el enfoque bayesiano, es pertinente revisar los
+métodos existentes para estimar distancias estelares. Esta revisión permite
+contextualizar la contribución de los modelos jerárquicos bayesianos
 y comprender por qué se necesitan.
 
-\subsubsection{Métodos no estadísticos}
-Existen varios métodos astrofísicos para estimar distancias que no 
-requieren un marco de inferencia estadística formal:
-
-\begin{enumerate}
-    \item \textbf{Inversión directa de la paralaje.} El método más 
-    elemental consiste en aplicar la relación $r = 1/\varpi$ 
-    (Ecuación~\ref{eq:parallax}). Este cálculo es exacto cuando 
-    la paralaje se conoce sin error, pero como se discutirá más 
-    adelante, produce estimaciones sesgadas y de varianza alta 
-    cuando $\sigma_\varpi/\varpi$ es significativo 
-    \citep{Bailer_2015, luri2018gaia}.
-
-    \item \textbf{Paralaje espectroscópica.} A pesar de su nombre, 
-    este método no involucra mediciones de paralaje. Consiste en 
-    determinar el tipo espectral de una estrella a partir de su 
-    espectro y, usando relaciones de calibración, asignarle una 
-    magnitud absoluta. La distancia se obtiene entonces del módulo 
-    de distancia (Ecuación~\ref{eq:distmod}). Su precisión depende 
-    fuertemente de la calidad de la clasificación espectral y de 
-    la calibración empleada \citep{Carroll_Ostlie_2017}.
-
-    \item \textbf{Candelas estándar.} Ciertos tipos de estrellas 
-    poseen relaciones bien definidas entre propiedades observables 
-    y su luminosidad intrínseca, lo que permite estimar su magnitud
-    absoluta de forma independiente:
-    \begin{itemize}
-        \item Las \textit{Cefeidas} presentan una relación 
-        período-luminosidad descubierta por \citet{Leavitt_1912}: 
-        a mayor período de pulsación, mayor luminosidad intrínseca. 
-        Midiendo el período, se deduce $M$ y, junto con $m$ 
-        observada, la distancia.
-        \item Las \textit{estrellas RR Lyrae} cumplen un papel 
-        análogo para poblaciones estelares viejas, con una relación 
-        período-luminosidad-metalicidad.
-        \item Las \textit{supernovas de tipo Ia} sirven como candelas 
-        estándar a escalas extragalácticas.
-    \end{itemize}
-    Estos métodos son poderosos pero están restringidos a tipos 
-    estelares específicos y no son aplicables a la población general 
-    del catálogo Gaia \citep{Carroll_Ostlie_2017}.
-
-    \item \textbf{Ajuste de secuencia principal (\textit{main-sequence 
-    fitting}).} Para cúmulos estelares, donde todas las estrellas 
-    se encuentran aproximadamente a la misma distancia, se puede 
-    superponer la secuencia principal observada sobre una secuencia 
-    principal de referencia calibrada. El desplazamiento vertical 
-    necesario para el ajuste proporciona el módulo de distancia del 
-    cúmulo \citep{Carroll_Ostlie_2017}.
-
-    \item \textbf{Binarias eclipsantes.} En sistemas binarios cuya 
-    órbita está orientada casi de canto respecto al observador, el 
-    análisis de la curva de luz y las velocidades radiales permite 
-    determinar los radios estelares y, a partir de ellos, la 
-    luminosidad y la distancia \citep{Carroll_Ostlie_2017}.
-\end{enumerate}
-
-Cada uno de estos métodos tiene un dominio de aplicabilidad 
-limitado: la inversión directa falla estadísticamente para 
-paralajes ruidosas, las candelas estándar solo aplican a tipos 
-específicos, y el ajuste de secuencia principal requiere pertenecer 
-a un cúmulo. Ninguno ofrece un marco general para estimar distancias 
-de poblaciones heterogéneas de estrellas con mediciones ruidosas.
-
-\subsubsection{Métodos estadísticos no bayesianos}
-Ante las limitaciones de la inversión directa, se han propuesto 
+Ante las limitaciones de la inversión directa, se han propuesto
 diversas correcciones estadísticas de naturaleza frecuentista:
 
 \begin{enumerate}
-    \item \textbf{Corrección de Lutz-Kelker.} \citet{Lutz_Kelker_1973} 
-    identificaron un sesgo sistemático en las muestras de estrellas 
-    seleccionadas por tener paralajes mayores a un cierto umbral: 
-    debido a la distribución espacial de las estrellas (donde hay 
-    más estrellas lejanas que cercanas), los errores de medición 
-    producen una sobrerrepresentación neta de estrellas cuya paralaje 
-    verdadera es menor que la observada. La corrección propuesta 
-    consiste en ajustar la magnitud absoluta calibrada en función 
-    del error fraccional de la paralaje. Sin embargo, como señalan 
-    \citet{luri2018gaia}, esta corrección se aplica frecuentemente 
-    fuera de las condiciones bajo las cuales fue derivada --- asume 
-    densidad espacial uniforme y errores fraccionales pequeños --- 
+    \item \textbf{Corrección de Lutz-Kelker.} \citet{Lutz_Kelker_1973}
+    identificaron un sesgo sistemático en las muestras de estrellas
+    seleccionadas por tener paralajes mayores a un cierto umbral:
+    debido a la distribución espacial de las estrellas (donde hay
+    más estrellas lejanas que cercanas), los errores de medición
+    producen una sobrerrepresentación neta de estrellas cuya paralaje
+    verdadera es menor que la observada. La corrección propuesta
+    consiste en ajustar la magnitud absoluta calibrada en función
+    del error fraccional de la paralaje. Sin embargo, como señalan
+    \citet{luri2018gaia}, esta corrección se aplica frecuentemente
+    fuera de las condiciones bajo las cuales fue derivada --- asume
+    densidad espacial uniforme y errores fraccionales pequeños ---
     y su uso indiscriminado puede introducir sesgos adicionales.
 
-    \item \textbf{Corrección de Smith-Eichhorn.} \citet{Smith_Eichhorn_1996} 
+    \item \textbf{Corrección de Smith-Eichhorn.} \citet{Smith_Eichhorn_1996}
     proponen dos estrategias para regularizar la estimación de
     distancias derivadas de la paralaje: una transformación de la
     paralaje observada y un esquema de ponderación que reduce
     fuertemente la influencia de paralajes cercanas a cero. Según el
-    análisis de \citet{luri2018gaia}, 
-    esta corrección es una ``elección arbitraria y bastante 
-    enrevesada'' cuyos parámetros fueron ajustados por ensayo y 
-    error. Bajo distribuciones espaciales realistas (no uniformes), 
-    la corrección muestra un comportamiento patológico con sesgos 
+    análisis de \citet{luri2018gaia},
+    esta corrección es una ``elección arbitraria y bastante
+    enrevesada'' cuyos parámetros fueron ajustados por ensayo y
+    error. Bajo distribuciones espaciales realistas (no uniformes),
+    la corrección muestra un comportamiento patológico con sesgos
     nuevos que carecen de interpretación física.
 
-    \item \textbf{Correcciones por expansión de Taylor.} Varios 
-    autores han intentado corregir el sesgo de la inversión directa 
-    mediante expansiones en serie de Taylor de $1/\varpi$ alrededor 
-    del valor verdadero. Como muestra \citet{Bailer_2015}, estas 
-    expansiones solo son válidas para errores fraccionales menores 
-    a aproximadamente 0.2, y no pueden usarse en la práctica porque 
+    \item \textbf{Correcciones por expansión de Taylor.} Varios %% TODO: Si son varios deben referenciarce a varios autores
+    autores han intentado corregir el sesgo de la inversión directa
+    mediante expansiones en serie de Taylor de $1/\varpi$ alrededor
+    del valor verdadero. Como muestra \citet{Bailer_2015}, estas
+    expansiones solo son válidas para errores fraccionales menores
+    a aproximadamente 0.2, y no pueden usarse en la práctica porque
     la corrección depende de la distancia verdadera (desconocida).
 
-    \item \textbf{Estimación por máxima verosimilitud.} Se puede 
-    plantear la estimación de la distancia como un problema de 
-    maximización de la verosimilitud $P(\varpi \mid r, 
-    \sigma_\varpi)$. Sin embargo, como demuestran 
-    \citet{luri2018gaia}, la solución de máxima verosimilitud para 
-    una sola estrella es simplemente la inversión directa 
-    $\hat{r} = 1/\varpi$, que ya se sabe que es problemática. 
-    Esto ocurre porque sin una distribución \textit{a priori}, no 
+    \item \textbf{Estimación por máxima verosimilitud.} Se puede
+    plantear la estimación de la distancia como un problema de
+    maximización de la verosimilitud $P(\varpi \mid r,
+    \sigma_\varpi)$. Sin embargo, como demuestran
+    \citet{luri2018gaia}, la solución de máxima verosimilitud para
+    una sola estrella es simplemente la inversión directa
+    $\hat{r} = 1/\varpi$, que ya se sabe que es problemática.
+    Esto ocurre porque sin una distribución \textit{a priori}, no
     hay información adicional que regularice la estimación.
 \end{enumerate}
 
-El denominador común de estos métodos es que intentan corregir un 
-estimador puntual (la inversión directa) sin proporcionar una 
-distribución completa de la incertidumbre y sin incorporar 
-información adicional de manera coherente. Como concluyen 
-\citet{Bailer_2015} y \citet{luri2018gaia}, el enfoque adecuado 
-es formular el problema en el marco de la inferencia bayesiana, 
-donde la distribución \textit{a priori} cumple precisamente el 
-papel de incorporar información externa de forma explícita y 
+El denominador común de estos métodos es que intentan corregir un
+estimador puntual (la inversión directa) sin proporcionar una
+distribución completa de la incertidumbre y sin incorporar
+información adicional de manera coherente. Como concluyen
+\citet{Bailer_2015} y \citet{luri2018gaia}, el enfoque adecuado
+es formular el problema en el marco de la inferencia bayesiana,
+donde la distribución \textit{a priori} cumple precisamente el
+papel de incorporar información externa de forma explícita y
 transparente.
 
 \subsection{Inferencia Bayesiana}
 
 \subsubsection{El teorema de Bayes}
-La inferencia bayesiana se fundamenta en el teorema de Bayes, que 
-establece cómo actualizar las creencias sobre un parámetro $\theta$ 
+La inferencia bayesiana se fundamenta en el teorema de Bayes, que
+establece cómo actualizar las creencias sobre un parámetro $\theta$
 a la luz de datos observados $y$:
 \begin{equation}
     P(\theta \mid y) = \frac{P(y \mid \theta) \, P(\theta)}{P(y)}
@@ -715,17 +777,17 @@ a la luz de datos observados $y$:
 \end{equation}
 donde:
 \begin{itemize}
-    \item $P(\theta \mid y)$ es la \textbf{distribución a 
-    posteriori}: la distribución del parámetro después de observar 
+    \item $P(\theta \mid y)$ es la \textbf{distribución a
+    posteriori}: la distribución del parámetro después de observar
     los datos.
-    \item $P(y \mid \theta)$ es la \textbf{función de 
-    verosimilitud}: la probabilidad de observar los datos dado un 
+    \item $P(y \mid \theta)$ es la \textbf{función de
+    verosimilitud}: la probabilidad de observar los datos dado un
     valor del parámetro.
-    \item $P(\theta)$ es la \textbf{distribución a priori}: la 
-    información disponible sobre el parámetro antes de observar 
+    \item $P(\theta)$ es la \textbf{distribución a priori}: la
+    información disponible sobre el parámetro antes de observar
     los datos.
-    \item $P(y) = \int P(y \mid \theta) P(\theta) \, d\theta$ es 
-    la \textbf{evidencia} o probabilidad marginal de los datos, que 
+    \item $P(y) = \int P(y \mid \theta) P(\theta) \, d\theta$ es
+    la \textbf{evidencia} o probabilidad marginal de los datos, que
     actúa como constante de normalización.
 \end{itemize}
 
@@ -736,185 +798,194 @@ En la práctica, se trabaja con la relación de proporcionalidad:
 \end{equation}
 ya que la evidencia no depende de $\theta$.
 
-\subsubsection{Justificación del enfoque bayesiano para la estimación 
+\subsubsection{Justificación del enfoque bayesiano para la estimación
 de distancias}
-La inferencia bayesiana es el marco natural para el problema de 
-estimación de distancias estelares por varias razones, como 
+La inferencia bayesiana es el marco natural para el problema de
+estimación de distancias estelares por varias razones, como
 argumentan \citet{Bailer_2015} y \citet{luri2018gaia}:
 
 \begin{enumerate}
-    \item \textbf{Manejo de la no linealidad.} La relación 
-    $r = 1/\varpi$ es altamente no lineal: pequeñas variaciones en 
-    $\varpi$ cerca de cero producen cambios enormes en $r$. La 
-    distribución posterior de la distancia es típicamente asimétrica, 
-    con una cola larga hacia distancias grandes, lo que hace 
+    \item \textbf{Manejo de la no linealidad.} La relación
+    $r = 1/\varpi$ es altamente no lineal: pequeñas variaciones en
+    $\varpi$ cerca de cero producen cambios enormes en $r$. La
+    distribución posterior de la distancia es típicamente asimétrica,
+    con una cola larga hacia distancias grandes, lo que hace
     inadecuadas las aproximaciones gaussianas simétricas.
-    \item \textbf{Incorporación de información previa.} La elección 
-    de un prior es \textit{inevitable}: incluso la decisión de usar 
-    solo la verosimilitud (equivalente a un prior uniforme) impone 
-    supuestos implícitos. Un prior uniforme en distancia 
-    $P(r) = \text{const}$ es, paradójicamente, altamente informativo 
-    porque asigna probabilidad creciente a volúmenes cada vez mayores 
+    \item \textbf{Incorporación de información previa.} La elección
+    de un prior es \textit{inevitable}: incluso la decisión de usar
+    solo la verosimilitud (equivalente a un prior uniforme) impone
+    supuestos implícitos. Un prior uniforme en distancia
+    $P(r) = \text{const}$ es, paradójicamente, altamente informativo
+    porque asigna probabilidad creciente a volúmenes cada vez mayores %% TODO: Mejorar esta explicacion
     del espacio \citep{Bailer_2015}.
-    \item \textbf{Tratamiento natural de paralajes negativas.} En 
-    el marco bayesiano, una paralaje negativa es un dato perfectamente 
-    válido que empuja la posterior hacia distancias grandes, sin 
+    \item \textbf{Tratamiento natural de paralajes negativas.} En
+    el marco bayesiano, una paralaje negativa es un dato perfectamente
+    válido que empuja la posterior hacia distancias grandes, sin
     necesidad de descartarla ni transformarla.
-    \item \textbf{Cuantificación completa de la incertidumbre.} La 
-    posterior proporciona una distribución completa, permitiendo 
-    reportar intervalos de credibilidad asimétricos que reflejan 
+    \item \textbf{Cuantificación completa de la incertidumbre.} La
+    posterior proporciona una distribución completa, permitiendo
+    reportar intervalos de credibilidad asimétricos que reflejan
     correctamente la incertidumbre.
 \end{enumerate}
 
-\subsubsection{Elección de la distribución a priori para la distancia}
-La distribución a priori codifica la expectativa sobre la 
-distribución espacial de las estrellas antes de observar la paralaje. 
+\subsubsection{Elección de la distribución a priori para la distancia} %% TODO: Dado que estamos replicando un trabajo en el cual no vamos a usar ninguna de estas distribuciones, sera necesario esta seccion?
+La distribución a priori codifica la expectativa sobre la
+distribución espacial de las estrellas antes de observar la paralaje.
 \citet{Bailer_2015} comparó tres opciones fundamentales:
 
 \begin{enumerate}
-    \item \textbf{Prior uniforme impropio}, $P(r) \propto 1$ para 
-    $r > 0$: produce una posterior con varianza infinita para 
+    \item \textbf{Prior uniforme impropio}, $P(r) \propto 1$ para
+    $r > 0$: produce una posterior con varianza infinita para
     errores fraccionales mayores a 0.22.
-    \item \textbf{Prior uniforme truncado}, $P(r) = 1/r_{\text{lim}}$ 
-    para $0 < r \leq r_{\text{lim}}$: introduce sesgo por el corte 
+    \item \textbf{Prior uniforme truncado}, $P(r) = 1/r_{\text{lim}}$
+    para $0 < r \leq r_{\text{lim}}$: introduce sesgo por el corte
     abrupto, que afecta a estrellas lejanas.
-    \item \textbf{Prior de densidad espacial exponencialmente 
+    \item \textbf{Prior de densidad espacial exponencialmente
     decreciente (EDSD)}:
     \begin{equation}
-        P(r \mid L) = \frac{r^2}{2L^3} \exp\left(-\frac{r}{L}\right), 
+        P(r \mid L) = \frac{r^2}{2L^3} \exp\left(-\frac{r}{L}\right),
         \quad r > 0
         \label{eq:edsd}
     \end{equation}
-    donde $L$ es un parámetro de escala. El factor $r^2$ refleja el 
-    crecimiento del volumen con la distancia, mientras que la 
-    exponencial decreciente modela la disminución de la densidad 
-    estelar. Este prior produce estimaciones con sesgo mínimo incluso 
+    donde $L$ es un parámetro de escala. El factor $r^2$ refleja el
+    crecimiento del volumen con la distancia, mientras que la
+    exponencial decreciente modela la disminución de la densidad
+    estelar. Este prior produce estimaciones con sesgo mínimo incluso
     para errores fraccionales grandes.
 \end{enumerate}
 
-% TODO-FIGURA: Figura central de propuesta.
-% Comparación de tres priors para la distancia.
-% Graficar $P(r)$ para: (a) uniforme impropio, (b) uniforme truncado
-% en $r_{\text{lim}} = 2$ kpc, (c) EDSD con $L = 1.35$ kpc.
-% Superponer la posterior resultante para una estrella con
-% $\hat{\varpi} = 0.5$ mas y $\sigma_\varpi = 0.3$ mas.
-% Conviene porque resume una decisión estadística central del trabajo.
-% Cálculo: evaluar analíticamente cada prior, multiplicar por
-% la verosimilitud gaussiana, normalizar e integrar numéricamente.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{comparacion_priors.pdf}
+    \caption{Comparación de tres \emph{priors} para la distancia estelar (uniforme impropio, uniforme truncado y EDSD) y su respectiva influencia en la \emph{posterior} resultante.}
+    \label{fig:comparacion_priors}
+\end{figure}
 
-El EDSD ha sido ampliamente adoptado como punto de partida en la 
-literatura \citep{Bailer_2015, 2021AJ....161..147B, luri2018gaia}. 
-No obstante, su limitación principal es que el parámetro $L$ debe 
-fijarse de antemano. Los modelos jerárquicos, como el que propone 
-este trabajo, superan esta limitación al aprender los parámetros 
+El EDSD ha sido ampliamente adoptado como punto de partida en la
+literatura \citep{Bailer_2015, 2021AJ....161..147B, luri2018gaia}.
+No obstante, su limitación principal es que el parámetro $L$ debe
+fijarse de antemano. Los modelos jerárquicos, como el que propone %% TODO: Claro pero como vamo a usar un prior no informativo por el trabajo anterior
+este trabajo, superan esta limitación al aprender los parámetros
 del prior directamente de los datos.
 
 \subsection{Modelos Bayesianos Jerárquicos}
 
+Antes de presentar la estructura formal del modelo, conviene precisar
+una distinción conceptual importante. En un modelo bayesiano, las %% TODO: Esta explicacion no va aca, pues no se explicado siquiera lo que es un modelo bayesiano jerarquico, ademas es muy descriptivo del marco metodologico
+cantidades observadas no reciben \textit{priors}; lo que se especifica
+para ellas es una verosimilitud condicional a las variables latentes y
+parámetros del modelo. En este problema, $\hat{\varpi}_k$,
+$\hat{m}_k$ y $\hat{C}_k$ son datos observados, por lo que aparecen en
+la verosimilitud y no en el prior. La jerarquía surge cuando las
+variables latentes individuales de cada estrella, como $r_k$, $M_k$,
+$C_k$ y eventualmente $z_k$, comparten parámetros poblacionales
+comunes. Por esta razón, el Modelo~0 se interpreta como un modelo
+bayesiano básico con estructura jerárquica limitada, mientras que los
+Modelos~1 y~2 sí son genuinamente jerárquicos, porque todas las
+estrellas contribuyen a inferir parámetros poblacionales del CMD y
+esos parámetros poblacionales retroalimentan la estimación individual
+mediante contracción bayesiana.
+
 \subsubsection{Estructura de un modelo jerárquico}
-Un modelo bayesiano jerárquico (HBM, por sus siglas en inglés) 
-extiende el marco bayesiano estándar introduciendo múltiples niveles 
-de parámetros. En el contexto de la estimación de distancias para 
+Un modelo bayesiano jerárquico (HBM, por sus siglas en inglés)
+extiende el marco bayesiano estándar introduciendo múltiples niveles
+de parámetros. En el contexto de la estimación de distancias para %% TODO: Buscar una bibliografia que explique los modelos jerárquicos bayesianos de forma clara y accesible, como el libro de Gelman o artículos de revisión específicos sobre HBM.
 $N$ estrellas, la estructura es:
 
 \begin{itemize}
-    \item \textbf{Nivel 1 --- Verosimilitud:} los datos observados 
-    de cada estrella $k$ (paralaje $\hat{\varpi}_k$, magnitud 
-    aparente $\hat{m}_k$, color $\hat{C}_k$) se modelan como 
-    funciones de los parámetros latentes individuales (distancia 
-    $r_k$, magnitud absoluta $M_k$, color intrínseco $C_k$) más 
+    \item \textbf{Nivel 1 --- Verosimilitud:} los datos observados
+    de cada estrella $k$ (paralaje $\hat{\varpi}_k$, magnitud
+    aparente $\hat{m}_k$, color $\hat{C}_k$) se modelan como
+    funciones de los parámetros latentes individuales (distancia
+    $r_k$, magnitud absoluta $M_k$, color intrínseco $C_k$) más
     ruido observacional.
-    \item \textbf{Nivel 2 --- Prior poblacional:} los parámetros 
-    latentes individuales ($r_k$, $M_k$, $C_k$) se modelan como 
-    extracciones de una distribución poblacional compartida, cuyos 
-    parámetros se denominan \textbf{hiperparámetros} $\phi$.
-    \item \textbf{Nivel 3 --- Hiperprior:} los hiperparámetros 
+    \item \textbf{Nivel 2 --- Prior poblacional:} los parámetros
+    latentes individuales ($r_k$, $M_k$, $C_k$) se modelan como
+    extracciones de una distribución poblacional compartida, cuyos
+    parámetros se denominan \textbf{hiperparámetros} $\phi$. %% TODO: Validar estos priors, pues parece que no son necesarios
+    \item \textbf{Nivel 3 --- Hiperprior:} los hiperparámetros
     $\phi$ tienen a su vez distribuciones a priori (hiperpriors).
 \end{itemize}
 
-La distribución posterior conjunta es:
+La distribución posterior conjunta es: %% Validar esta ecuacion
 \begin{equation}
-    P(\{r_k, M_k, C_k\}, \phi \mid \text{datos}) \propto 
-    \left[\prod_{k=1}^{N} P(\text{datos}_k \mid r_k, M_k, C_k) \, 
+    P(\{r_k, M_k, C_k\}, \phi \mid \text{datos}) \propto
+    \left[\prod_{k=1}^{N} P(\text{datos}_k \mid r_k, M_k, C_k) \,
     P(r_k, M_k, C_k \mid \phi)\right] P(\phi)
     \label{eq:hbm}
 \end{equation}
 
-% TODO-FIGURA: Figura central de propuesta.
-% Diagrama de placa (plate notation) del modelo jerárquico.
-% Mostrar: nodo observado ($\hat{\varpi}_k$,
-% $\hat{m}_k$, $\hat{C}_k$), nodos latentes ($r_k$, $M_k$, $C_k$),
-% hiperparámetros ($\{f_b\}$), e hiperprior ($\alpha$). La placa
-% encierra los $N$ nodos individuales.
-% Cálculo: diagrama estático (TikZ con librería bayesnet).
+\begin{figure}[H] %% Corregir la grafica despues de validar la ecuacion
+    \centering
+    \includegraphics{plate_notation.pdf}
+    \caption{Diagrama de placa simplificado mostrando la estructura de los nodos latentes y observados que definen condicionalmente la inferencia de distancias estelares y parámetros fotométricos.}
+    \label{fig:plate_notation}
+\end{figure}
 
 \subsubsection{Contracción bayesiana (\textit{Bayesian shrinkage})}
-Una propiedad fundamental de los modelos jerárquicos es la 
-\textit{contracción bayesiana}: las estimaciones individuales se 
-``contraen'' hacia la media poblacional. En el contexto de distancias 
+Una propiedad fundamental de los modelos jerárquicos es la
+\textit{contracción bayesiana}: las estimaciones individuales se
+``contraen'' hacia la media poblacional. En el contexto de distancias %% TODO: Explicar mejor y mas claro que es esta contraccion
 estelares, esto significa que:
 \begin{itemize}
-    \item Las estrellas con mediciones precisas (alto S/N) informan 
-    la distribución poblacional del CMD --- es decir, definen el 
+    \item Las estrellas con mediciones precisas (alto S/N) informan
+    la distribución poblacional del CMD --- es decir, definen el
     prior para las demás estrellas.
-    \item Las estrellas con mediciones ruidosas (bajo S/N) se 
-    benefician de este prior poblacional aprendido, contrayendo 
+    \item Las estrellas con mediciones ruidosas (bajo S/N) se
+    benefician de este prior poblacional aprendido, contrayendo
     sus estimaciones hacia las regiones de alta densidad del CMD.
 \end{itemize}
-El efecto neto es una mejora en la precisión y una reducción del 
-sesgo, particularmente para las estrellas que más lo necesitan 
-\citep{Leistedt_2017}. Este fenómeno es una propiedad general de 
-los modelos jerárquicos, discutida en detalle en el contexto 
+El efecto neto es una mejora en la precisión y una reducción del
+sesgo, particularmente para las estrellas que más lo necesitan
+\citep{Leistedt_2017}. Este fenómeno es una propiedad general de
+los modelos jerárquicos, discutida en detalle en el contexto
 estadístico por \citet[cap.~5]{Gelman_BDA3}.
 
-% TODO-FIGURA-OPCIONAL: Ilustración de la contracción bayesiana.
-% Útil para exposición oral o versión extendida, pero no esencial en
-% la propuesta si ya se incluyen CMD, priors y plate notation.
-% Panel izquierdo: estimaciones por inversión directa ($1/\varpi$)
-% con barras de error grandes. Panel derecho: estimaciones del
-% modelo jerárquico con intervalos más estrechos, contraídos hacia
-% el CMD. Línea diagonal = distancia verdadera.
-% Cálculo: simular 50 estrellas con distancias conocidas, añadir
-% ruido, estimar con inversión directa y con el modelo, graficar.
+\begin{figure}[H]
+    \centering
+    \includegraphics{contraccion_bayesiana.pdf}
+    \caption{Contracción bayesiana sobre un conjunto de simulaciones. A la izquierda, la estimación ruidosa tradicional mediante inversión. A la derecha, el efecto estructural del \emph{Bayesian shrinkage}, con moderación hacia la \emph{población priori}.}
+    \label{fig:contraccion_bayesiana}
+\end{figure}
 
-\subsection{Métodos Computacionales: Monte Carlo vía Cadenas de 
+\subsection{Métodos Computacionales: Monte Carlo vía Cadenas de
 Markov}
 
-La distribución posterior de un modelo jerárquico con millones de 
-parámetros (Ecuación~\ref{eq:hbm}) no puede calcularse 
-analíticamente. Para explorarla se recurre a métodos de Monte Carlo 
-vía cadenas de Markov (MCMC), que generan muestras de la posterior 
-mediante una caminata aleatoria en el espacio de parámetros 
+La distribución posterior de un modelo jerárquico con millones de
+parámetros (Ecuación~\ref{eq:hbm}) no puede calcularse
+analíticamente. Para explorarla se recurre a métodos de Monte Carlo
+vía cadenas de Markov (MCMC), que generan muestras de la posterior
+mediante una caminata aleatoria en el espacio de parámetros
 \citep{Hogg_2018}.
 
 \subsubsection{Fundamento de MCMC}
-Un algoritmo MCMC construye una cadena de Markov cuya distribución 
-estacionaria es la distribución objetivo $P(\theta \mid y)$. Tras 
-un período de convergencia, las muestras de la cadena se pueden 
-usar para aproximar cualquier integral respecto a la posterior 
-(esperanzas, varianzas, cuantiles). Como enfatiza \citet{Hogg_2018}, 
-el muestreo MCMC es fundamentalmente un método para calcular 
+Un algoritmo MCMC construye una cadena de Markov cuya distribución
+estacionaria es la distribución objetivo $P(\theta \mid y)$. Tras
+un período de convergencia, las muestras de la cadena se pueden
+usar para aproximar cualquier integral respecto a la posterior
+(esperanzas, varianzas, cuantiles). Como enfatiza \citet{Hogg_2018},
+el muestreo MCMC es fundamentalmente un método para calcular
 integrales, no para optimización.
 
 \subsubsection{Algoritmos relevantes}
 \begin{enumerate}
-    \item \textbf{Muestreo de Gibbs:} actualiza cada parámetro 
-    condicionalmente al resto, muestreando de las distribuciones 
-    condicionales completas. Es el método empleado por 
-    \citet{Leistedt_2017} para su modelo jerárquico, ya que la 
-    elección de priors conjugados permite muestrear las 
+    \item \textbf{Muestreo de Gibbs:} actualiza cada parámetro
+    condicionalmente al resto, muestreando de las distribuciones
+    condicionales completas. Es el método empleado por
+    \citet{Leistedt_2017} para su modelo jerárquico, ya que la
+    elección de priors conjugados permite muestrear las
     distribuciones condicionales de forma analítica.
-    \item \textbf{Monte Carlo Hamiltoniano (HMC):} explora el 
-    espacio de parámetros siguiendo trayectorias hamiltonianas que 
-    utilizan la información del gradiente de la log-posterior. La 
-    idea central es tratar los parámetros como coordenadas de 
-    posición e introducir variables auxiliares de momento, simulando 
-    la dinámica de un sistema hamiltoniano para proponer saltos 
-    grandes en el espacio de parámetros con alta probabilidad de 
-    aceptación. La variante más utilizada es el \textit{No-U-Turn 
-    Sampler} (NUTS) \citep{Hoffman_Gelman_2014}, que ajusta 
-    automáticamente la longitud de la trayectoria, eliminando la 
-    necesidad de calibrar manualmente este hiperparámetro. NUTS es 
+    \item \textbf{Monte Carlo Hamiltoniano (HMC):} explora el  %% TODO: De repente detallarlo un poco mas
+    espacio de parámetros siguiendo trayectorias hamiltonianas que
+    utilizan la información del gradiente de la log-posterior. La
+    idea central es tratar los parámetros como coordenadas de
+    posición e introducir variables auxiliares de momento, simulando
+    la dinámica de un sistema hamiltoniano para proponer saltos
+    grandes en el espacio de parámetros con alta probabilidad de
+    aceptación. La variante más utilizada es el \textit{No-U-Turn
+    Sampler} (NUTS) \citep{Hoffman_Gelman_2014}, que ajusta
+    automáticamente la longitud de la trayectoria, eliminando la
+    necesidad de calibrar manualmente este hiperparámetro. NUTS es
     el algoritmo por defecto en PyMC y Stan.
     \item \textbf{Inferencia variacional (VI):} reemplaza la
     posterior exacta por una familia paramétrica de distribuciones y
@@ -927,15 +998,17 @@ integrales, no para optimización.
     MCMC en subproblemas reducidos.
 \end{enumerate}
 
-\subsubsection{Diagnósticos de convergencia}
-Según \citet{Hogg_2018}, el diagnóstico más importante es el 
-\textbf{tiempo de autocorrelación} ($\tau$), que mide cuántos pasos 
-de la cadena se necesitan para obtener una muestra efectivamente 
-independiente. El número de muestras efectivas 
-$n_{\text{eff}} = N / \tau$ determina la precisión de las 
-estimaciones. Otros diagnósticos incluyen el estadístico 
-$\hat{R}$ \citep{Vehtari_Rhat_2021}, que compara la varianza entre 
-cadenas con la varianza dentro de cadenas, y la inspección visual 
+%% TODO: Aca se deberia incluir una seccion sobre los metodos de muestreo y/o formas de encontrar parametros que no son por medio de muestreo como el MAP, IV, Pathfinder, Laplace approximation, etc.
+
+\subsubsection{Diagnósticos de convergencia}  %% TODO: Se debe explicar mejor este diagnostico y como va relacionado con los metodos de muestreo. Es que parece un texto sin ningun contexto. Creo que se debe enlistar no se si aca o en otro lugar, que valores debo esperar de las tecnicas de muestreo y que debo ver para ver la calidad del muestreo
+Según \citet{Hogg_2018}, el diagnóstico más importante es el
+\textbf{tiempo de autocorrelación} ($\tau$), que mide cuántos pasos
+de la cadena se necesitan para obtener una muestra efectivamente
+independiente. El número de muestras efectivas
+$n_{\text{eff}} = N / \tau$ determina la precisión de las
+estimaciones. Otros diagnósticos incluyen el estadístico
+$\hat{R}$ \citep{Vehtari_Rhat_2021}, que compara la varianza entre
+cadenas con la varianza dentro de cadenas, y la inspección visual
 de las trazas.
 
 % TODO-RESULTADOS: Diagnósticos de inferencia.
@@ -946,13 +1019,14 @@ de las trazas.
 
 \subsection{El Modelo Jerárquico del Diagrama Color-Magnitud}
 
-Esta sección describe la formulación del modelo que se propone 
+Esta sección describe la formulación del modelo que se propone
 desarrollar, basado en el trabajo de \citet{Leistedt_2017} pero
-adaptado a una familia finita de modelos semiadaptativos. La idea
-central es conservar la interpretabilidad del CMD en el espacio
-magnitud-color, introducir pesos de mezcla flexibles y permitir una
-adaptación limitada de la dispersión de los componentes, sin pasar a
-mezclas no paramétricas ni a modelos con centros completamente libres.
+adaptado a una secuencia corta de modelos jerárquicos. La idea central
+es conservar la interpretabilidad del CMD en el espacio
+magnitud-color, reconstruir una versión base cercana al modelo de
+referencia y estudiar una única extensión mínima que flexibiliza la
+dispersión global de los componentes, sin pasar a mezclas no
+paramétricas ni a modelos con centros completamente libres.
 
 \subsubsection{Notación probabilística y forma generativa}
 
@@ -961,7 +1035,7 @@ las cantidades observadas se denotan con sombrero
 ($\hat{\varpi}_k$, $\hat{m}_k$, $\hat{C}_k$), las variables latentes
 individuales sin sombrero ($r_k$, $M_k$, $C_k$), y los hiperparámetros
 poblacionales en negrita o con letras griegas
-($\mathbf{f}$, $\alpha$, $\lambda_M$, $\lambda_C$). La expresión
+($\mathbf{f}$, $\lambda$). La expresión
 $x \sim P(\cdot)$ se interpreta como ``la variable $x$ es generada a
 partir de la distribución $P$'', mientras que
 $y \mid x \sim P(\cdot)$ indica que $y$ se genera condicionalmente a
@@ -973,37 +1047,37 @@ En consecuencia, cada modelo se describirá de tres maneras
 complementarias: (i) en forma probabilística, mediante priors,
 verosimilitudes e hiperpriors; (ii) en forma generativa, como una
 secuencia de variables aleatorias que producen las observaciones; y
-(iii) en forma gráfica, mediante diagramas de placas cuando sea útil.
+(iii) en forma gráfica, mediante diagramas de nodos cuando sea útil.
 Esta triple descripción busca que la formulación estadística sea
 directamente traducible a una implementación en PyMC o Stan.
 
 \subsubsection{Modelo generativo}
-El modelo parte de la premisa de que cada estrella $k$ posee 
-propiedades intrínsecas --- distancia $r_k$, magnitud absoluta $M_k$ 
-y color intrínseco $C_k$ --- que generan las observaciones ruidosas 
-(paralaje $\hat{\varpi}_k$, magnitud aparente $\hat{m}_k$, color 
-observado $\hat{C}_k$). El proceso generativo se describe en tres 
+El modelo parte de la premisa de que cada estrella $k$ posee
+propiedades intrínsecas --- distancia $r_k$, magnitud absoluta $M_k$
+y color intrínseco $C_k$ --- que generan las observaciones ruidosas
+(paralaje $\hat{\varpi}_k$, magnitud aparente $\hat{m}_k$, color
+observado $\hat{C}_k$). El proceso generativo se describe en tres
 niveles:
 
-\textbf{Nivel 1 --- Verosimilitud.} Las observaciones se modelan 
+\textbf{Nivel 1 --- Verosimilitud.} Las observaciones se modelan
 como gaussianas centradas en el valor verdadero:
 \begin{align}
-    P(\hat{\varpi}_k \mid r_k, \sigma_{\varpi,k}) &= 
-    \mathcal{N}\!\left(\hat{\varpi}_k \;\middle|\; \frac{1}{r_k}, \; 
+    P(\hat{\varpi}_k \mid r_k, \sigma_{\varpi,k}) &=
+    \mathcal{N}\!\left(\hat{\varpi}_k \;\middle|\; \frac{1}{r_k}, \;
     \sigma_{\varpi,k}^2\right) \label{eq:lik_plx} \\
-    P(\hat{m}_k \mid M_k, r_k, \sigma_{m,k}) &= 
-    \mathcal{N}\!\left(\hat{m}_k \;\middle|\; M_k + 5\log_{10}(r_k) - 5, \; 
+    P(\hat{m}_k \mid M_k, r_k, \sigma_{m,k}) &=
+    \mathcal{N}\!\left(\hat{m}_k \;\middle|\; M_k + 5\log_{10}(r_k) - 5, \;
     \sigma_{m,k}^2\right) \label{eq:lik_mag} \\
-    P(\hat{C}_k \mid C_k, \sigma_{C,k}) &= 
-    \mathcal{N}\!\left(\hat{C}_k \;\middle|\; C_k, \; 
+    P(\hat{C}_k \mid C_k, \sigma_{C,k}) &=
+    \mathcal{N}\!\left(\hat{C}_k \;\middle|\; C_k, \;
     \sigma_{C,k}^2\right) \label{eq:lik_color}
 \end{align}
-donde $\sigma_{\varpi,k}$, $\sigma_{m,k}$ y $\sigma_{C,k}$ son las 
+donde $\sigma_{\varpi,k}$, $\sigma_{m,k}$ y $\sigma_{C,k}$ son las
 incertidumbres observacionales. En el caso fotométrico, estas no se
 tomarán como ausentes: se derivarán a partir de los flujos reportados
 por Gaia. En particular, si $\hat{F}_{G,k}$ denota el flujo observado en
 la banda $G$ y $\sigma_{F_G,k}$ su incertidumbre, se utilizó la
-aproximación de primer orden
+aproximación de primer orden  %% TODO: Explicar mejor la aproximacion de primer orden, ya sea aca o antes
 \begin{equation}
     \sigma_{m,k} \approx \frac{2.5}{\ln 10}
     \frac{\sigma_{F_G,k}}{\hat{F}_{G,k}},
@@ -1020,7 +1094,7 @@ y, para el color $\hat{C}_k = \hat{m}_{\mathrm{BP},k} -
     \label{eq:sigma_color_flux}
 \end{equation}
 ignorando covarianzas fotométricas de orden superior. Esta es una
-linealización local de la transformación no lineal flux$\rightarrow$
+linealización local de la transformación no lineal flux$\rightarrow$  %% TODO: Explicarlo un poco mas claro, ademas se debe explicar que esto fue porque en la base de datos no se cuenta con los errores de las margitudes sino de los flujos y que se puede calcular la magnitud de los flujos. No estoy claro si lo explicaste antes
 magnitud, análoga al método delta en estadística aplicada
 \citep{Cox_Donnelly_2011}. Por tanto, no reproduce de forma exacta la
 asimetría que induce el logaritmo sobre la distribución de errores en
@@ -1048,15 +1122,15 @@ extensión conceptual y no como formulación principal del proyecto.
 
 Se asume además que las magnitudes y colores han sido previamente
 corregidos por extinción interestelar utilizando mapas tridimensionales
-de polvo (como los de \citealt{edenhofer2023parsecscale}), evaluados 
-en la estimación puntual de distancia dada por la paralaje ($1/\hat{\varpi}$). 
-Siguiendo la metodología de \citet{Leistedt_2017}, se considerará que las 
-magnitudes están perfectamente corregidas por polvo. Si bien la extinción 
-depende de la distancia verdadera (desconocida), esta aproximación rompe 
-la circularidad del problema y evita incorporar un modelo complejo del polvo 
+de polvo (como los de \citealt{edenhofer2023parsecscale}), evaluados
+en la estimación puntual de distancia dada por la paralaje ($1/\hat{\varpi}$).
+Siguiendo la metodología de \citet{Leistedt_2017}, se considerará que las
+magnitudes están perfectamente corregidas por polvo. Si bien la extinción
+depende de la distancia verdadera (desconocida), esta aproximación rompe
+la circularidad del problema y evita incorporar un modelo complejo del polvo
 galáctico dentro de la inferencia, por lo que el término
 $A_\lambda$ de la Ecuación~\ref{eq:distmod_ext} no aparece
-explícitamente en la verosimilitud. Asimismo, la paralaje observada
+explícitamente en la verosimilitud. Asimismo, la paralaje observada  %% TODO: Aca tengo la duda de a que se refiere pues no estoy del todo claro en esta parte del punto zero. Pues supongo que no es el centroide que es la primera causa de error que se quiere corregir o los puntos zero de las magnitudes en la transformacion del flujo a magnitud
 puede presentar un sesgo sistemático en su punto cero, dependiente
 de la magnitud, el color, la posición en el cielo y el tipo de
 solución astrométrica; para la muestra de cuásares analizada por
@@ -1065,41 +1139,26 @@ aproximadamente $-17$ $\mu$as. En la práctica, este sesgo se corrige
 aplicando la prescripción de punto cero correspondiente antes de la
 inferencia.
 
-\textbf{Nivel 2 --- Prior poblacional del CMD.} El prior conjunto 
-sobre la magnitud absoluta y el color se modela como una mezcla 
-finita de $B$ núcleos gaussianos distribuidos en una grilla sobre 
-el espacio color-magnitud. A diferencia del modelo más rígido de
-referencia, aquí se propone una mezcla finita semiadaptativa: los
-centros de la grilla permanecen fijos, los pesos se aprenden a partir
-de los datos y la dispersión de los componentes se controla mediante
-pocos hiperparámetros globales. Específicamente,
+\textbf{Nivel 2 --- Prior poblacional del CMD.} El prior conjunto
+sobre la magnitud absoluta y el color se modela como una mezcla
+finita de $B$ núcleos gaussianos distribuidos en una grilla sobre
+el espacio color-magnitud. En el modelo base, los centros de la grilla
+permanecen fijos y los pesos se aprenden a partir de los datos. La
+extensión propuesta conserva esa estructura e introduce una única
+escala global de dispersión. Específicamente,
 \begin{equation}
-    P(M_k, C_k \mid \mathbf{f}, \lambda_M, \lambda_C) =
-    \sum_{b=1}^{B} f_b \, 
-    \mathcal{N}\!\left(\begin{pmatrix} M_k \\ C_k \end{pmatrix} 
-    \;\middle|\; \boldsymbol{\mu}_b, \; \boldsymbol{\Sigma}_b(\lambda_M, \lambda_C)\right)
+    P(M_k, C_k \mid \mathbf{f}, \lambda) =
+    \sum_{b=1}^{B} f_b \,
+    \mathcal{N}\!\left(\begin{pmatrix} M_k \\ C_k \end{pmatrix}
+    \;\middle|\; \boldsymbol{\mu}_b, \; \lambda^2\boldsymbol{\Sigma}^{(0)}_b\right)
     \label{eq:cmd_prior}
 \end{equation}
 donde $f_b$ es la fracción de estrellas asociada al componente $b$,
-con $\sum_b f_b = 1$ y $f_b \geq 0$, y
-\begin{equation}
-    \boldsymbol{\Sigma}_b(\lambda_M, \lambda_C) =
-    \mathbf{\Lambda}\, \boldsymbol{\Sigma}^{(0)}_b\, \mathbf{\Lambda},
-    \qquad
-    \mathbf{\Lambda} =
-    \begin{pmatrix}
-        \lambda_M & 0 \\
-        0 & \lambda_C
-    \end{pmatrix},
-    \label{eq:cmd_cov_scale}
-\end{equation}
-con $\boldsymbol{\mu}_b$ y $\boldsymbol{\Sigma}^{(0)}_b$ fijados a
-partir de una grilla inicial. Las fracciones $\mathbf{f}$ codifican la
-abundancia relativa de las regiones del CMD, mientras que
-$\lambda_M$ y $\lambda_C$ controlan la dispersión efectiva en
-magnitud absoluta y color. De este modo, el prior conserva una
-estructura interpretable y finita, pero permite una adaptación
-moderada a la muestra analizada.
+con $\sum_b f_b = 1$ y $f_b \geq 0$, mientras que
+$\boldsymbol{\mu}_b$ y $\boldsymbol{\Sigma}^{(0)}_b$ se fijan a partir
+de una grilla inicial. En el modelo base se recupera el caso
+$\lambda = 1$; en la extensión propuesta, $\lambda > 0$ permite que la
+dispersión efectiva del CMD se contraiga o se expanda de forma global.
 
 La elección de una grilla fija de núcleos gaussianos, en lugar de un
 modelo de mezcla con centros y covarianzas completamente libres, es
@@ -1111,53 +1170,45 @@ Dirichlet, porque requerirían una inferencia considerablemente más
 costosa y añadirían complejidad innecesaria para los objetivos de un
 trabajo de pregrado.
 
-% TODO-FIGURA-OPCIONAL: Grilla de componentes gaussianos sobre el CMD.
-% Mantener si se quiere enfatizar visualmente cómo se construye el
-% prior del CMD en los Modelos 2 y 3. Prioridad media.
-% Graficar el CMD observado (scatter con densidad) y superponer
-% los centros $\boldsymbol{\mu}_b$ como puntos con elipses
-% representando $\boldsymbol{\Sigma}_b$. Mostrar cómo la grilla
-% cubre densamente las regiones pobladas del CMD.
-% Cálculo: definir la grilla (e.g., $20 \times 20$ en el rango
-% color $\in [-0.5, 4]$, $M_G \in [-2, 15]$), graficar sobre
+\begin{figure}[H]
+    \centering
+    \includegraphics{gmm_cmd.pdf} %% Creo que en vez de que sea conceptual podemos agarrar una mezcla pero usando una agrupacion de cluster por metodos parametricos
+    \caption{Esquema conceptual de la modelización GMM para una representación analítica de las densidades astrofísicas (color y magnitud) presentes en el CMD.}
+    \label{fig:gmm_cmd}
+\end{figure}
 % datos de la muestra de desarrollo simulada.
 
 \textbf{Nivel 3 --- Hiperprior.} Las fracciones de mezcla siguen una
-distribución de Dirichlet regularizada,
+distribución de Dirichlet simple,
 \begin{equation}
-    \mathbf{f} \mid \alpha \sim \text{Dir}(\alpha \eta_1, \ldots,
-    \alpha \eta_B),
+    \mathbf{f} \sim \text{Dir}(\alpha_0, \ldots, \alpha_0),
     \label{eq:dirichlet_hyper}
 \end{equation}
-donde $\boldsymbol{\eta}$ es un vector base fijado sobre la grilla y
-$\alpha$ controla el nivel global de concentración. Además,
-$\lambda_M$ y $\lambda_C$ reciben hiperpriors positivos, por ejemplo
-lognormales o half-normal, que actúan como regularización suave sobre
-la dispersión de los componentes. Esta parametrización permite que el
-modelo aprenda tanto la ocupación relativa del CMD como su grado de
-difusión, sin liberar todos los parámetros de la mezcla.
+donde $\alpha_0$ es una constante fija que regulariza la ocupación de
+la grilla. En la extensión propuesta, la escala global $\lambda$
+recibe un hiperprior positivo, por ejemplo half-normal o lognormal,
+que actúa como regularización suave sobre la dispersión de los
+componentes.
 
 \subsubsection{Posterior e inferencia}
 Combinando los tres niveles, la posterior conjunta del modelo
-semiadaptativo puede escribirse como
+jerárquico puede escribirse como
 \begin{equation}
 \begin{aligned}
     &P\!\left(\{r_k, M_k, C_k, z_k\}_{k=1}^{N},
-    \mathbf{f}, \alpha, \lambda_M, \lambda_C
+    \mathbf{f}, \lambda
     \;\middle|\; \text{datos}\right) \\
     &\propto
     \prod_{k=1}^{N}
     P(\hat{\varpi}_k \mid r_k)
     P(\hat{m}_k \mid M_k, r_k)
     P(\hat{C}_k \mid C_k)
-    P(M_k, C_k \mid z_k, \lambda_M, \lambda_C)
+    P(M_k, C_k \mid z_k, \lambda)
     P(z_k \mid \mathbf{f})
     P(r_k) \\
     &\qquad \times
-    P(\mathbf{f} \mid \alpha)
-    P(\alpha)
-    P(\lambda_M)
-    P(\lambda_C)
+    P(\mathbf{f})
+    P(\lambda)
 \end{aligned}
     \label{eq:semiadapt_post}
 \end{equation}
@@ -1169,13 +1220,14 @@ En la práctica, la inferencia no se organizó alrededor de un único
 algoritmo universal. Los modelos reducidos y algunas submuestras
 podrán analizarse con MCMC para verificar comportamiento y comparar
 aproximaciones. Sin embargo, para el ajuste rutinario de los modelos
-con pesos flexibles y escalas de covarianza aprendidas se priorizará la
+con pesos flexibles y, en el caso extendido, con una escala global de
+covarianza aprendida se priorizará la
 inferencia variacional. Esta elección es coherente con el objetivo del
-proyecto: comparar variantes plausibles del modelo y cuantificar el
+proyecto: comparar variantes plausibles del modelo y cuantificar el %% TODO: Ver los objetivos del proyecto
 compromiso entre flexibilidad, calidad inferencial y costo
 computacional.
 
-Cuando las covarianzas de base permanezcan fijas, la interacción entre
+Cuando las covarianzas de base permanezcan fijas, la interacción entre %% TODO: Creo que este texto se debe aclarar mejor, pues sinceramente no se para que esta realizando esta aclaracion
 la verosimilitud gaussiana y los núcleos gaussianos del CMD sigue
 permitiendo expresiones analíticas útiles; por ejemplo, para la
 magnitud:
@@ -1184,10 +1236,10 @@ magnitud:
     \hat{m}_k \;\middle|\; \mu_{M,b} + 5\log_{10}(r_k) - 5, \;
     \sigma_{m,k}^2 + \sigma_{M,b}^2\right)
 \end{equation}
-donde $\mu_{M,b}$ y $\sigma_{M,b}^2$ son la media y varianza del 
-componente $b$ en la dirección de magnitud absoluta. Expresiones 
-análogas se obtienen para el color. El prior sobre la distancia 
-$P(r_k)$ puede ser el EDSD (Ecuación~\ref{eq:edsd}) u otro prior 
+donde $\mu_{M,b}$ y $\sigma_{M,b}^2$ son la media y varianza del
+componente $b$ en la dirección de magnitud absoluta. Expresiones
+análogas se obtienen para el color. El prior sobre la distancia
+$P(r_k)$ puede ser el EDSD (Ecuación~\ref{eq:edsd}) u otro prior
 espacial adecuado.
 En el trabajo de \citet{Leistedt_2017}, una estructura más rígida se
 explota mediante muestreo de Gibbs y marginalizaciones analíticas. En
@@ -1199,9 +1251,9 @@ global de la dispersión del prior del CMD.
 
 \subsection{Evaluación y Validación del Modelo}
 
-La validación del modelo sigue el flujo de trabajo bayesiano 
-(\textit{Bayesian workflow}) propuesto por \citet{gelman2020bayesian}, 
-que prescribe una serie de verificaciones iterativas antes de 
+La validación del modelo sigue el flujo de trabajo bayesiano
+(\textit{Bayesian workflow}) propuesto por \citet{gelman2020bayesian},
+que prescribe una serie de verificaciones iterativas antes de
 confiar en los resultados de la inferencia.
 
 \subsubsection{Calibración basada en simulación (SBC)}
@@ -1224,12 +1276,12 @@ iteraciones ni para el modelo final completo.
 % ejecutada, no una figura necesaria para la propuesta.
 
 \subsubsection{Chequeo predictivo posterior (PPC)}
-El chequeo predictivo posterior \citep[cap.~6]{Gelman_BDA3} compara 
-datos simulados a partir de la distribución posterior con los datos observados. Si el modelo captura 
-adecuadamente la estructura de los datos, los datos replicados 
-deben ser estadísticamente indistinguibles de los datos reales. 
-Se utilizan estadísticos de resumen (distribución de paralajes, 
-distribución de colores, estructura del CMD) para evaluar 
+El chequeo predictivo posterior \citep[cap.~6]{Gelman_BDA3} compara
+datos simulados a partir de la distribución posterior con los datos observados. Si el modelo captura
+adecuadamente la estructura de los datos, los datos replicados
+deben ser estadísticamente indistinguibles de los datos reales.
+Se utilizan estadísticos de resumen (distribución de paralajes,
+distribución de colores, estructura del CMD) para evaluar
 discrepancias sistemáticas.
 
 % TODO-RESULTADOS: Ejemplo de chequeo predictivo posterior (PPC).
@@ -1237,19 +1289,19 @@ discrepancias sistemáticas.
 % no como figura de propuesta.
 
 \subsubsection{Métricas de rendimiento}
-Las métricas principales para evaluar la mejora lograda por el 
+Las métricas principales para evaluar la mejora lograda por el
 modelo jerárquico son:
 \begin{itemize}
-    \item \textbf{Mejora en S/N:} la relación señal-ruido de la 
-    distancia, definida como $r / \sigma_r$, comparada entre la 
+    \item \textbf{Mejora en S/N:} la relación señal-ruido de la
+    distancia, definida como $r / \sigma_r$, comparada entre la
     inversión directa y la posterior del modelo.
-    \item \textbf{Reducción de incertidumbre:} la disminución 
+    \item \textbf{Reducción de incertidumbre:} la disminución
     porcentual en la anchura de los intervalos de credibilidad.
-    \item \textbf{Sesgo:} la diferencia sistemática entre las 
-    distancias estimadas y las verdaderas (en datos simulados) o 
+    \item \textbf{Sesgo:} la diferencia sistemática entre las
+    distancias estimadas y las verdaderas (en datos simulados) o
     de referencia (en cúmulos abiertos).
-    \item \textbf{Factor de contracción (\textit{shrinkage}):}  
-    cuantificación de cuánto se ``contrae'' cada estimación 
+    \item \textbf{Factor de contracción (\textit{shrinkage}):}
+    cuantificación de cuánto se ``contrae'' cada estimación
     individual hacia la media poblacional, lo cual puede aproximarse comparando
     la varianza de las estimaciones puntuales con la varianza del modelo poblacional,
     o mediante formulaciones análogas al parámetro de contracción en modelos
@@ -1258,70 +1310,70 @@ modelo jerárquico son:
 
 \subsection{Definición de Términos Básicos}
 
-\begin{description}
-    \item[Paralaje trigonométrica ($\varpi$):] ángulo, medido en 
-    segundos de arco, que subtiende la línea base Tierra-Sol vista 
+\begin{description}  %% TODO: Revisar que terminos faltan y cuales sobran, pues vi que algunos tenian explicacion en el contenido
+    \item[Paralaje trigonométrica ($\varpi$):] ángulo, medido en
+    segundos de arco, que subtiende la línea base Tierra-Sol vista
     desde una estrella. Es inversamente proporcional a la distancia.
-    \item[Parsec (pc):] unidad de distancia equivalente a la 
-    distancia a la cual una unidad astronómica subtiende un ángulo 
+    \item[Parsec (pc):] unidad de distancia equivalente a la
+    distancia a la cual una unidad astronómica subtiende un ángulo
     de un segundo de arco (1 pc $\approx$ 3.26 años luz).
-    \item[Magnitud aparente ($m$):] medida logarítmica del brillo 
+    \item[Magnitud aparente ($m$):] medida logarítmica del brillo
     observado de un objeto celeste.
-    \item[Magnitud absoluta ($M$):] magnitud aparente que tendría 
+    \item[Magnitud absoluta ($M$):] magnitud aparente que tendría
     un objeto si estuviera a una distancia de 10 parsecs.
-    \item[Módulo de distancia ($m - M$):] diferencia entre la 
-    magnitud aparente y la magnitud absoluta, directamente 
+    \item[Módulo de distancia ($m - M$):] diferencia entre la
+    magnitud aparente y la magnitud absoluta, directamente
     relacionada con la distancia.
-    \item[Diagrama Color-Magnitud (CMD):] representación gráfica de 
-    la magnitud absoluta en función del índice de color de un 
+    \item[Diagrama Color-Magnitud (CMD):] representación gráfica de
+    la magnitud absoluta en función del índice de color de un
     conjunto de estrellas.
-    \item[Índice de color:] diferencia de magnitudes en dos bandas 
-    fotométricas distintas, indicador de la temperatura superficial 
+    \item[Índice de color:] diferencia de magnitudes en dos bandas
+    fotométricas distintas, indicador de la temperatura superficial
     de la estrella.
-    \item[Extinción interestelar ($A_\lambda$):] atenuación de la 
+    \item[Extinción interestelar ($A_\lambda$):] atenuación de la
     luz estelar causada por el polvo y gas del medio interestelar.
-    \item[Distribución a priori (\textit{prior}):] distribución de 
-    probabilidad que codifica la información disponible sobre un 
+    \item[Distribución a priori (\textit{prior}):] distribución de
+    probabilidad que codifica la información disponible sobre un
     parámetro antes de observar los datos.
-    \item[Distribución a posteriori (\textit{posterior}):] 
-    distribución de probabilidad del parámetro después de combinar 
+    \item[Distribución a posteriori (\textit{posterior}):]
+    distribución de probabilidad del parámetro después de combinar
     el prior con la verosimilitud de los datos observados.
-    \item[Función de verosimilitud (\textit{likelihood}):] función 
-    que describe la probabilidad de observar los datos para cada 
+    \item[Función de verosimilitud (\textit{likelihood}):] función
+    que describe la probabilidad de observar los datos para cada
     posible valor del parámetro.
-    \item[Modelo Bayesiano Jerárquico (HBM):] modelo probabilístico 
-    con múltiples niveles de parámetros, donde los parámetros 
-    individuales comparten una distribución poblacional cuyos 
+    \item[Modelo Bayesiano Jerárquico (HBM):] modelo probabilístico
+    con múltiples niveles de parámetros, donde los parámetros
+    individuales comparten una distribución poblacional cuyos
     hiperparámetros se infieren simultáneamente de los datos.
-    \item[Contracción bayesiana (\textit{shrinkage}):] fenómeno por 
-    el cual las estimaciones individuales en un modelo jerárquico se 
-    ``contraen'' hacia la media o estructura poblacional, mejorando 
+    \item[Contracción bayesiana (\textit{shrinkage}):] fenómeno por
+    el cual las estimaciones individuales en un modelo jerárquico se
+    ``contraen'' hacia la media o estructura poblacional, mejorando
     las estimaciones de los casos con más ruido.
-    \item[MCMC:] familia de algoritmos de Monte Carlo vía cadenas de 
-    Markov que generan muestras de una distribución de 
-    probabilidad construyendo una cadena de Markov cuya distribución 
+    \item[MCMC:] familia de algoritmos de Monte Carlo vía cadenas de
+    Markov que generan muestras de una distribución de
+    probabilidad construyendo una cadena de Markov cuya distribución
     estacionaria es la distribución objetivo.
-    \item[Error fraccional de la paralaje ($\sigma_\varpi / \varpi$):] 
-    razón entre la incertidumbre de la medición de paralaje y su 
+    \item[Error fraccional de la paralaje ($\sigma_\varpi / \varpi$):]
+    razón entre la incertidumbre de la medición de paralaje y su
     valor, indicador de la calidad de la medición.
-    \item[Relación señal-ruido (S/N):] razón entre el valor estimado 
-    de un parámetro y su incertidumbre; a mayor S/N, más precisa es 
+    \item[Relación señal-ruido (S/N):] razón entre el valor estimado
+    de un parámetro y su incertidumbre; a mayor S/N, más precisa es
     la estimación.
-    \item[Calibración basada en simulación (SBC):] técnica de 
-    validación que verifica la corrección de un algoritmo de 
-    inferencia bayesiana simulando datos del modelo y comprobando 
-    que la posterior recupera los parámetros verdaderos con la 
+    \item[Calibración basada en simulación (SBC):] técnica de
+    validación que verifica la corrección de un algoritmo de
+    inferencia bayesiana simulando datos del modelo y comprobando
+    que la posterior recupera los parámetros verdaderos con la
     cobertura esperada.
-    \item[Hiperparámetro:] parámetro que controla la distribución 
-    poblacional en un modelo jerárquico; en este trabajo, las 
+    \item[Hiperparámetro:] parámetro que controla la distribución
+    poblacional en un modelo jerárquico; en este trabajo, las
     fracciones $\{f_b\}$ del modelo de mezcla del CMD.
-    \item[Distribución de Dirichlet:] distribución de probabilidad 
-    multivariante definida sobre el simplex, que generaliza la 
-    distribución beta al caso de más de dos categorías. Es el prior 
+    \item[Distribución de Dirichlet:] distribución de probabilidad
+    multivariante definida sobre el simplex, que generaliza la
+    distribución beta al caso de más de dos categorías. Es el prior
     conjugado de la verosimilitud multinomial.
-    \item[Prior conjugado:] distribución a priori que, combinada con 
-    una familia de verosimilitud específica, produce una distribución 
-    a posteriori de la misma familia, facilitando el cálculo 
+    \item[Prior conjugado:] distribución a priori que, combinada con
+    una familia de verosimilitud específica, produce una distribución
+    a posteriori de la misma familia, facilitando el cálculo
     analítico.
 \end{description}
 
@@ -1330,7 +1382,7 @@ modelo jerárquico son:
 
 \subsection{Tipo de investigación}
 
-De acuerdo con \citet{Cox_Donnelly_2011}, este trabajo se clasifica como
+De acuerdo con \citet{Cox_Donnelly_2011}, este trabajo se clasifica como  %% TODO: Por favor, revisar si esto es correcto
 un estudio observacional, puesto que no se tiene control sobre las
 variables de estudio: las mediciones de paralaje y fotometría provienen
 de observaciones astronómicas realizadas por la misión Gaia. La
@@ -1345,7 +1397,7 @@ El diseño sigue el flujo de trabajo bayesiano propuesto por
 proceso iterativo de construcción, verificación y expansión de modelos.
 En cada iteración se aplica el siguiente ciclo:
 
-\begin{enumerate}
+\begin{enumerate}  %% TODO: Estos pasos si estan acordes a la metodologia de Gelman 2020?
     \item Especificar el modelo generativo (prior $+$ verosimilitud).
     \item Verificar la implementación mediante calibración basada en
     simulación (SBC) cuando sea computacionalmente factible,
@@ -1362,12 +1414,9 @@ En cada iteración se aplica el siguiente ciclo:
 \end{enumerate}
 
 Este ciclo se repite con complejidad creciente, partiendo de un modelo
-mínimo (Modelo~0) hasta alcanzar un modelo semiadaptativo delimitado
-(Modelo~3). Los Modelos~0--2 constituyen la ruta mínima de
-desarrollo y validación; el Modelo~3 incorpora la flexibilización
-adicional propuesta para el CMD, pero sin pasar a mezclas no
-paramétricas ni a componentes completamente libres. La progresión se
-resume a continuación y se desarrolla en la
+mínimo (Modelo~0) hasta alcanzar una extensión mínima del prior del
+CMD (Modelo~2). Los tres modelos constituyen la ruta de desarrollo y
+validación del trabajo. La progresión se resume a continuación y se desarrolla en la
 \hyperref[sec:iterativo]{subsección Desarrollo Iterativo del Modelo}.
 
 \subsection{Fuente de datos}
@@ -1448,34 +1497,32 @@ resume esta progresión:
 
 \begin{table}[H]
 \centering
-\caption{Progresión iterativa de los modelos}\label{tab:modelos}
+\caption{Progresión iterativa de los modelos}\label{tab:modelos} %% TODO: Esto se tiene que revisar de aca para abajo, pues segun veo Se esta utilizando un prior EDSD que no es el que usa la bibliografia base
 \begin{tabular}{clll}
 \hline
 Modelo & Datos & Prior distancia & Estructura fotométrica/CMD \\
 \hline
 0 & $\hat{\varpi}_k$ & EDSD & --- \\
-1 & $\hat{\varpi}_k$, $\hat{m}_k$, $\hat{C}_k$ & EDSD &
-    priors independientes, $\sigma$ desde flujos \\
-2 & $\hat{\varpi}_k$, $\hat{m}_k$, $\hat{C}_k$ & EDSD & mezcla
+1 & $\hat{\varpi}_k$, $\hat{m}_k$, $\hat{C}_k$ & EDSD & mezcla
     finita con pesos flexibles \\
-3 & $\hat{\varpi}_k$, $\hat{m}_k$, $\hat{C}_k$ & EDSD & mezcla
-    semiadaptativa: pesos + escalas \\
+2 & $\hat{\varpi}_k$, $\hat{m}_k$, $\hat{C}_k$ & EDSD & mezcla
+    finita con pesos flexibles + escala global $\lambda$ \\
 \hline
 \end{tabular}
 \end{table}
 
-En todos los casos, la especificación se presentará con la misma
+En todos los casos, la especificación se presentará con la misma %% TODO: Incluso este flujo, aca no se usa los datos simulados de la base de datos de Gaia, se esta estimando directamente sobre los datos observados y sacando los calculos
 convención: primero los datos observados, luego el modelo generativo y
 finalmente la distribución posterior de interés. Esta estructura reproduce la forma en
 que los modelos se implementan en programación probabilística, donde
 la especificación generativa es el punto de partida de la inferencia.
 
-% TODO-FIGURA: Figura central de propuesta.
-% Diagrama de flujo del desarrollo iterativo.
-% Cuatro bloques (Modelo 0 → 1 → 2 → 3) conectados por flechas,
-% mostrando el ciclo especificación, ajuste, PPC, comparación y
-% decisión. Debe complementar la tabla, no repetirla.
-% Cálculo: diagrama estático (TikZ o draw.io).
+\begin{figure}[H]
+    \centering
+    \includegraphics{flujo_iterativo.pdf}
+    \caption{Representación gráfica del flujo de desarrollo iterativo, incorporando la propagación de la física y estructura matemática de la estimación sobre los modelos.}
+    \label{fig:flujo_iterativo}
+\end{figure}
 
 \subsubsection{Modelo 0: Prior exponencial con verosimilitud de paralaje}
 
@@ -1540,15 +1587,15 @@ estructura relevante de los datos.
 % (b) Histograma de rangos SBC, si se ejecutó.
 % (c) PPC: $\hat{\varpi}^{\text{obs}}$ vs $\hat{\varpi}^{\text{rep}}$.
 
-\subsubsection{Modelo 1: Incorporación de la fotometría}
+\subsubsection{Modelo 1: CMD jerárquico base con pesos flexibles}
 
 El Modelo~0 ignora la información fotométrica. El Modelo~1 incorpora
-las magnitudes aparentes y el color como datos observados adicionales,
-manteniendo priors independientes (no jerárquicos) para la magnitud
-absoluta y el color intrínseco. La novedad respecto a una formulación
-fotométrica simplificada es que las incertidumbres de magnitud y color
-se obtienen a partir de los flujos reportados por Gaia, en lugar de
-tratar la fotometría como exacta.
+las magnitudes aparentes y el color como datos observados adicionales y
+usa un prior jerárquico sobre el CMD inspirado directamente en
+\citet{Leistedt_2017}. La novedad respecto al artículo de referencia es
+que la formulación se adapta a Gaia DR3 y que las incertidumbres de
+magnitud y color se obtienen a partir de los flujos reportados por
+Gaia, en lugar de tratar la fotometría como exacta.
 
 \textbf{Datos observados adicionales.}
 Además de $\hat{\varpi}_k$, se observan la magnitud aparente
@@ -1565,10 +1612,17 @@ magnitudes sea razonable \citep{2021AJ....161..147B, Cox_Donnelly_2011}.
 \textbf{Modelo generativo.}
 Se mantiene el prior de distancia del Modelo~0 y se añaden:
 \begin{align}
-    M_k &\sim \mathcal{N}(\mu_M,\; \sigma_M^2),
-        \label{eq:m1_prior_M} \\
-    C_k &\sim \mathcal{N}(\mu_C,\; \sigma_C^2),
-        \label{eq:m1_prior_C} \\
+    \mathbf{f} &\sim \text{Dir}(\alpha_0, \ldots, \alpha_0),
+        \label{eq:m1_weights} \\
+    z_k \mid \mathbf{f} &\sim \text{Categorical}(\mathbf{f}),
+        \label{eq:m1_alloc} \\
+    (M_k, C_k) \mid z_k=b &\sim
+        \mathcal{N}\!\left(
+        \begin{pmatrix} M_k \\ C_k \end{pmatrix}
+        \;\Bigg|\;
+        \boldsymbol{\mu}_b,\; \boldsymbol{\Sigma}^{(0)}_b
+        \right),
+        \label{eq:m1_cmd} \\
     \hat{m}_k \mid r_k, M_k &\sim
         \mathcal{N}\!\left(M_k + 5\log_{10}(r_k) - 5,\;
         \sigma_{m,k}^2\right),
@@ -1577,53 +1631,50 @@ Se mantiene el prior de distancia del Modelo~0 y se añaden:
         \mathcal{N}(C_k,\; \sigma_{C,k}^2),
         \label{eq:m1_lik_C}
 \end{align}
-donde $\mu_M$, $\sigma_M$, $\mu_C$, $\sigma_C$ son hiperparámetros
-fijados a partir de valores tabulados para estrellas de la secuencia
-principal. El módulo de distancia $\mu_d = 5\log_{10}(r_k) - 5$ conecta
-la magnitud absoluta con la aparente.
+donde $\boldsymbol{\mu}_b$ y $\boldsymbol{\Sigma}^{(0)}_b$ describen una
+grilla fija de componentes gaussianos en el CMD, construida a partir de
+una muestra de desarrollo. El módulo de distancia conecta la magnitud
+absoluta con la aparente a través de la verosimilitud fotométrica.
 
 \textbf{Contribución esperada.}
 Se espera que la fotometría aporte restricciones adicionales sobre
 $r_k$, especialmente para estrellas con paralaje ruidosa, al vincular
 la distancia con la magnitud absoluta a través del módulo de distancia.
-Además, este modelo permite evaluar si incorporar explícitamente la
-incertidumbre fotométrica derivada del flujo modifica de forma
-apreciable el ajuste respecto a la aproximación de magnitudes casi sin
-error. También deja explícita una delimitación importante: la
-formulación principal sigue estando en el espacio magnitud-color, y el
-tratamiento exacto en espacio de flujo se reconoce como una extensión
-metodológica más fiel pero de mayor complejidad inferencial.
+Además, el prior del CMD codifica directamente la estructura
+astrofísica de las poblaciones estelares mediante pesos de mezcla
+aprendidos en la muestra. Esto permite estudiar de manera conjunta el
+aporte del cambio de datos a Gaia DR3, la construcción de errores
+fotométricos desde flujos y el uso de un modelo jerárquico cercano al
+de referencia.
 
 \textbf{Verificación y evaluación.}
 Se repetirán las verificaciones que resulten factibles y los PPC. Se
 compararán las distribuciones posteriores de $r_k$ con las
 del Modelo~0 para cuantificar la ganancia de información.
 
-\subsubsection{Modelo 2: CMD con pesos flexibles}
+\subsubsection{Modelo 2: CMD con escala global aprendida}
 
-Los priors independientes del Modelo~1 no capturan la correlación
-entre magnitud absoluta y color que define las secuencias
-del CMD. El Modelo~2 reemplaza los priors independientes por un
-modelo de mezcla de gaussianos finito sobre el CMD, manteniendo fija la
-grilla de centros pero permitiendo que los pesos de mezcla se aprendan
-de los datos.
+El Modelo~2 conserva la estructura del Modelo~1, pero introduce una
+única extensión mínima del prior del CMD: una escala global de
+dispersión compartida por todos los componentes. El objetivo no es
+rediseñar por completo la mezcla, sino evaluar si una relajación suave
+de la rigidez del prior mejora el ajuste sin perder interpretabilidad.
 
 \textbf{Prior del CMD.}
-Se define una grilla de $B$ componentes sobre el CMD a partir de una
-muestra de desarrollo construida con las simulaciones oficiales de
-Gaia. Los centros $\boldsymbol{\mu}_b$ y las covarianzas base
-$\boldsymbol{\Sigma}^{(0)}_b$ permanecen fijos, mientras que los pesos
-de mezcla se modelan como
+Se mantiene la misma grilla de $B$ componentes del Modelo~1. Los
+centros $\boldsymbol{\mu}_b$ y las covarianzas base
+$\boldsymbol{\Sigma}^{(0)}_b$ permanecen fijos, pero se introduce un
+hiperparámetro positivo $\lambda$ tal que
 \begin{align}
-    \mathbf{f} &\sim \text{Dir}(\alpha \eta_1, \ldots, \alpha \eta_B),
-        \label{eq:m2_weights} \\
+    \lambda &\sim \text{LogNormal}(0, \tau_{\lambda}^2),
+        \label{eq:m2_lambda} \\
     z_k \mid \mathbf{f} &\sim \text{Categorical}(\mathbf{f}),
         \label{eq:m2_alloc} \\
-    (M_k, C_k) \mid z_k=b &\sim
+    (M_k, C_k) \mid z_k=b, \lambda &\sim
         \mathcal{N}\!\left(
         \begin{pmatrix} M_k \\ C_k \end{pmatrix}
         \;\Bigg|\;
-        \boldsymbol{\mu}_b,\; \boldsymbol{\Sigma}^{(0)}_b
+        \boldsymbol{\mu}_b,\; \lambda^2\boldsymbol{\Sigma}^{(0)}_b
         \right).
         \label{eq:m2_cmd}
 \end{align}
@@ -1631,108 +1682,27 @@ de mezcla se modelan como
 \textbf{Modelo generativo.}
 Las ecuaciones de verosimilitud~\eqref{eq:m1_lik_m}
 y~\eqref{eq:m1_lik_C} se mantienen, pero los priors independientes
-\eqref{eq:m1_prior_M}--\eqref{eq:m1_prior_C} se reemplazan por la
-mezcla anterior. Este modelo ya introduce un mecanismo de contracción
-bayesiana a través de pesos de mezcla aprendidos en la muestra.
+se combinan ahora con un prior del CMD cuya dispersión efectiva puede
+contraerse o expandirse globalmente alrededor de la grilla de
+referencia. El caso $\lambda = 1$ recupera exactamente el Modelo~1.
 
 \textbf{Contribución esperada.}
 El prior del CMD codifica la estructura astrofísica de las poblaciones
 estelares: la secuencia principal, el \textit{turn-off}, la rama de
 gigantes rojas. Se espera que esto mejore las estimaciones de distancia
 al restringir las combinaciones $(M, C)$ a regiones físicamente
-plausibles del CMD. A diferencia de un GMM completamente fijo, este
-modelo permite que la ocupación relativa de cada región del CMD se
-adapte a la muestra analizada.
+plausibles del CMD. La extensión propuesta permite estudiar si el ancho
+de esa estructura debe contraerse o expandirse globalmente al adaptarse
+a Gaia DR3. Se trata de una modificación estadística real, pero lo
+suficientemente acotada como para mantenerse dentro de un alcance de
+pregrado.
 
 \textbf{Verificación y evaluación.}
 Se aplicaron verificaciones con datos simulados y PPC. Se evaluó si
-el aprendizaje de los pesos reduce sesgo o mejora cobertura respecto al
-Modelo~1 y respecto a una mezcla completamente fija.
-
-\subsubsection{Modelo 3: CMD semiadaptativo con dispersión aprendida}
-
-El modelo final del proyecto mantiene la grilla de centros del
-Modelo~2, conserva los pesos flexibles, e incorpora dos
-hiperparámetros globales que ajustan la dispersión efectiva de los
-componentes del CMD. Esta es la principal variante metodológica del
-trabajo respecto al modelo base de referencia.
-
-\textbf{Modelo generativo.}
-Se introducen hiperpriors sobre la concentración de los pesos y sobre
-las escalas globales de covarianza:
-\begin{align}
-    \alpha &\sim \text{Gamma}(a_\alpha, b_\alpha),
-        \label{eq:m3_hyper} \\
-    \lambda_M &\sim \text{LogNormal}(0, \tau_M^2),
-        \label{eq:m3_lambdaM} \\
-    \lambda_C &\sim \text{LogNormal}(0, \tau_C^2),
-        \label{eq:m3_lambdaC} \\
-    \mathbf{f} \mid \alpha &\sim
-        \text{Dirichlet}(\alpha \eta_1, \ldots, \alpha \eta_B),
-        \label{eq:m3_weights} \\
-    z_k \mid \mathbf{f} &\sim \text{Categorical}(\mathbf{f}),
-        \label{eq:m3_alloc} \\
-    (M_k, C_k) \mid z_k=b, \lambda_M, \lambda_C &\sim
-        \mathcal{N}\!\left(
-        \begin{pmatrix} M_k \\ C_k \end{pmatrix}
-        \;\Bigg|\;
-        \boldsymbol{\mu}_b,\;
-        \mathbf{\Lambda}\, \boldsymbol{\Sigma}^{(0)}_b\, \mathbf{\Lambda}
-        \right),
-        \label{eq:m3_cmd}
-\end{align}
-donde $\mathbf{\Lambda} = \text{diag}(\lambda_M, \lambda_C)$. Las
-verosimilitudes de paralaje~\eqref{eq:m0_lik}, magnitud
-\eqref{eq:m1_lik_m} y color~\eqref{eq:m1_lik_C}, junto con el prior
-EDSD~\eqref{eq:m0_prior}, se mantienen como en los modelos
-anteriores.
-
-Este modelo no libera por completo la geometría de la mezcla. Los
-centros $\boldsymbol{\mu}_b$ permanecen fijos en la grilla
-preentrenada; solo se aprenden la ocupación relativa del CMD y la
-escala global de dispersión en ambas direcciones. Así se introduce
-flexibilidad adicional sin perder interpretabilidad ni disparar la
-complejidad inferencial.
-
-\textbf{Posterior conjunta.}
-La distribución posterior del modelo completo es:
-\begin{equation}
-\begin{aligned}
-    &P\!\left(\{r_k, M_k, C_k, z_k\}_{k=1}^N, \mathbf{f},
-    \alpha, \lambda_M, \lambda_C
-    \;\Big|\; \{\hat{\varpi}_k, \hat{m}_k, \hat{C}_k\}\right) \\
-    &\propto
-    \prod_{k=1}^{N}
-    P(\hat{\varpi}_k \mid r_k)\;
-    P(\hat{m}_k \mid r_k, M_k)\;
-    P(\hat{C}_k \mid C_k)\;
-    P(M_k, C_k \mid z_k, \lambda_M, \lambda_C)\;
-    P(z_k \mid \mathbf{f})\;
-    P(r_k) \\
-    &\qquad \times
-    P(\mathbf{f} \mid \alpha)\;
-    P(\alpha)\;
-    P(\lambda_M)\;
-    P(\lambda_C)
-\end{aligned}
-    \label{eq:m3_post}
-\end{equation}
-
-\textbf{Contribución esperada.}
-Al aprender los pesos de mezcla y la dispersión global del prior del
-CMD, el modelo se adapta a la composición estelar de la muestra
-observacional concreta sin abandonar la estructura finita inicial.
-Esto permite estudiar explícitamente el compromiso entre rigidez del
-prior, precisión inferencial y costo computacional.
-
-\textbf{Verificación y evaluación.}
-SBC y PPC como en las iteraciones anteriores, en la medida en que el
-costo computacional lo permita. Adicionalmente se evaluó la
-recuperación de los pesos $\mathbf{f}$ simulados, la sensibilidad a
-$\lambda_M$ y $\lambda_C$, y la estabilidad de la inferencia en un
-espacio de parámetros de mayor dimensionalidad. La estrategia de ajuste
-principal será inferencia variacional; MCMC se reservará para
-submuestras o verificaciones puntuales.
+la inclusión de $\lambda$ mejora sesgo, cobertura o estabilidad
+respecto al Modelo~1. La estrategia de ajuste principal será inferencia
+variacional; MCMC se reservará para submuestras o verificaciones
+puntuales.
 
 \subsection{Protocolo de Validación}
 
@@ -1832,7 +1802,7 @@ con control de versiones (Git) y gestión de entornos (Pixi/Conda).
 % - Calibración SBC: Breve mención o histograma mostrando la uniformidad de los rangos para verificar la implementación en PyMC.
 
 \subsection{Evaluación en Datos Simulados (Verdad Conocida)}
-% TODO: Comparar el desempeño de los Modelos 0, 1, 2 y 3 usando la muestra de desarrollo de Gaia.
+% TODO: Comparar el desempeño de los Modelos 0, 1 y 2 usando la muestra de desarrollo de Gaia.
 % Aquí puedes insertar gráficos de Chequeos Predictivos Posteriores (PPC) mostrando si los datos replicados coinciden con las simulaciones.
 
 \begin{table}[H]
@@ -1844,16 +1814,15 @@ con control de versiones (Git) y gestión de entornos (Pixi/Conda).
 Modelo & RMSE (pc) & \shortstack{Sesgo medio\\($\Delta r / r$)} & \shortstack{Cobertura\\(95\\,\%)} & \shortstack{Mejora en\\relación señal-ruido} \\
 \hline
 Modelo 0 (solo paralaje) & -- & -- & -- & Base \\
-Modelo 1 (fotometría con priors independientes) & -- & -- & -- & -- \\
-Modelo 2 (CMD con pesos flexibles) & -- & -- & -- & -- \\
-Modelo 3 (CMD semiadaptativo) & -- & -- & -- & -- \\
+Modelo 1 (CMD jerárquico base) & -- & -- & -- & -- \\
+Modelo 2 (CMD con escala global $\lambda$) & -- & -- & -- & -- \\
 \hline
 \end{tabular}
 \end{table}
 
 \subsection{Aplicación a Datos Reales: Cúmulo de las Pléyades}
-% TODO: Resultados finales usando datos reales de Gaia DR3. 
-% Insertar un gráfico que muestre la contracción bayesiana (shrinkage): las estimaciones dispersas de 1/\varpi vs. las estimaciones del Modelo 3 agrupadas en ~136 pc.
+% TODO: Resultados finales usando datos reales de Gaia DR3.
+% Insertar un gráfico que muestre la contracción bayesiana (shrinkage): las estimaciones dispersas de 1/\varpi vs. las estimaciones del Modelo 2 agrupadas en ~136 pc.
 
 \begin{table}[H]
 \centering
@@ -1866,14 +1835,14 @@ Método & \shortstack{Distancia mediana\\(pc)} & \shortstack{Dispersión\\($\sig
 Referencia externa & 136.2 & -- & -- \\
 Inversión directa de la paralaje ($1/\varpi$) & -- & -- & -- \\
 Modelo 0 (EDSD) & -- & -- & -- \\
-Modelo 3 (CMD semiadaptativo) & -- & -- & -- \\
+Modelo 2 (CMD con escala global $\lambda$) & -- & -- & -- \\
 \hline
 \end{tabular}
 \end{table}
 
 \subsection{Discusión de Resultados}
-% TODO: Interpretar los hallazgos físicos y estadísticos. 
-% - ¿Valió la pena el aumento de complejidad computacional del Modelo 3 en comparación con el Modelo 0?
+% TODO: Interpretar los hallazgos físicos y estadísticos.
+% - ¿Valió la pena el aumento de complejidad computacional del Modelo 2 en comparación con el Modelo 0?
 % - Comentar sobre las limitaciones encontradas (por ejemplo, al fijar la extinción).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1885,7 +1854,7 @@ Modelo 3 (CMD semiadaptativo) & -- & -- & -- \\
 A partir de los resultados obtenidos y del desarrollo metodológico implementado, se derivan las siguientes conclusiones:
 \begin{itemize}
     \item \textbf{Impacto de la inclusión del CMD:} La incorporación progresiva de la información fotométrica... (completar con resultados numéricos: reducción de incertidumbre, corrección de sesgo).
-    \item \textbf{Viabilidad y complejidad modelística:} Se logró un equilibrio entre rigor estadístico y costo computacional mediante el uso de Inferencia Variacional y un modelo semiadaptativo... (completar con la experiencia práctica).
+    \item \textbf{Viabilidad y complejidad modelística:} Se logró un equilibrio entre rigor estadístico y costo computacional mediante el uso de Inferencia Variacional y una extensión mínima del prior del CMD basada en una escala global de dispersión... (completar con la experiencia práctica).
 \end{itemize}
 
 \subsection{Recomendaciones}

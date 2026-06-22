@@ -1,4 +1,4 @@
-\ProvidesClass{apa7}[2021/11/21 v2.14 APA formatting (7th edition)]
+\ProvidesClass{apa7_ula}[2021/11/21 v2.14 APA formatting (7th edition)]
 \NeedsTeXFormat{LaTeX2e}
 
 \DeclareOption{man}{%
