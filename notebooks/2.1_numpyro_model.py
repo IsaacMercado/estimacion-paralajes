@@ -6,9 +6,9 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.19.1
+#       jupytext_version: 1.19.3
 #   kernelspec:
-#     display_name: estimacion-paralajes
+#     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
@@ -32,42 +32,23 @@
 #
 # Para cada estrella usamos:
 #
-#
-#
 # $$
-#
 # b_s \sim \mathrm{Categorical}(\mathbf f),
-#
 # $$
 #
-#
-#
 # $$
-#
 # \hat{\varpi}_s \mid d_s \sim \mathcal N\left(1000/d_s, \sigma_{\hat{\varpi},s}^2\right),
-#
 # $$
 #
-#
-#
 # $$
-#
 # \hat m_s \mid d_s, b_s \sim \mathcal N\left(\mu_{M,b_s} + 5\log_{10} d_s - 5,\ \sigma_{\hat m,s}^2 + \sigma_{M,b_s}^2\right),
-#
 # $$
 #
-#
-#
 # $$
-#
 # \hat C_s \mid b_s \sim \mathcal N\left(\mu_{C,b_s},\ \sigma_{\hat C,s}^2 + \sigma_{C,b_s}^2\right).
-#
 # $$
-#
-#
 #
 # NumPyro enumera $b_s$ internamente, de modo que el modelo se escribe de forma generativa sin tener que codificar a mano el logsumexp.
-#
 
 # %%
 from pathlib import Path
@@ -335,7 +316,6 @@ numpyro_init_values = {
     "distance_pc": jnp.asarray(model_data["distance_init"]),
 }
 
-
 numpyro_kernel = NUTS(
     numpyro_cmd_model,
     init_strategy=init_to_value(values=numpyro_init_values),
@@ -350,7 +330,6 @@ numpyro_mcmc = MCMC(
     chain_method="sequential",
     progress_bar=True,
 )
-
 
 numpyro_mcmc.run(random.PRNGKey(42), **numpyro_example_inputs)
 numpyro_samples = numpyro_mcmc.get_samples(group_by_chain=True)

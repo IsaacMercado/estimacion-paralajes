@@ -6,4 +6,5 @@
     },
     "latex-workshop.formatting.latex": "latexindent",
     "ltex.language": "es",
+    "python-envs.defaultEnvManager": "ms-python.python:system",
 }

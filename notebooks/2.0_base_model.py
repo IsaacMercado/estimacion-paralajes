@@ -6,9 +6,9 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.19.1
+#       jupytext_version: 1.19.3
 #   kernelspec:
-#     display_name: estimacion-paralajes
+#     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
@@ -16,23 +16,13 @@
 # %% [markdown]
 # # 2.0 Modelo Base Jerarquico Para Paralajes
 #
-#
-#
 # Este notebook traduce a codigo una version base del modelo de Leistedt et al. para combinar paralajes y fotometria con un prior jerarquico en el diagrama color-magnitud.
-#
-#
 #
 # La idea central del articulo es:
 #
-#
-#
 # - modelar el diagrama color-magnitud como una mezcla discreta de kernels gaussianos con pesos $f_b$;
-#
 # - tratar la distancia de cada estrella como variable latente;
-#
 # - usar simultaneamente la verosimilitud de la paralaje y la informacion fotometrica para contraer la incertidumbre en distancia.
-#
-#
 #
 # En este notebook la implementacion final se hace con PyMC y deja sus resultados guardados para compararlos con NumPyro en notebooks separados.
 #
@@ -40,59 +30,31 @@
 # %% [markdown]
 # ## Modelo estadístico
 #
-#
-#
 # Para cada estrella $s$ observamos:
 #
-#
-#
 # - una paralaje $\hat{\varpi}_s$ con error $\sigma_{\hat{\varpi}, s}$;
-#
 # - una magnitud aparente $\hat{m}_s$ con error $\sigma_{\hat{m}, s}$;
-#
 # - un color $\hat{C}_s$ con error $\sigma_{\hat{C}, s}$.
-#
-#
 #
 # Siguiendo el paper, usamos:
 #
-#
-#
 # $$
-#
 # p(\hat{\varpi}_s \mid d_s) = \mathcal{N}\left(\hat{\varpi}_s \mid 1000 / d_s,\ \sigma_{\hat{\varpi}, s}^2\right)
-#
 # $$
-#
-#
 #
 # y un prior de color-magnitud como mezcla discreta
 #
-#
-#
 # $$
-#
 # p(M_s, C_s \mid \mathbf{f}) = \sum_{b=1}^{B} f_b\, K_b(M_s, C_s), \qquad \sum_b f_b = 1.
-#
 # $$
-#
-#
 #
 # Con kernels gaussianos fijos, la contribución fotométrica marginalizada por estrella queda
 #
-#
-#
 # $$
-#
 # \log p(\hat{m}_s, \hat{C}_s \mid d_s, \mathbf{f}) = \log \sum_{b=1}^{B} f_b\,
-#
 # \mathcal{N}\left(\hat{m}_s \mid \mu_{M,b} + 5\log_{10} d_s - 5,\ \sigma_{\hat{m}, s}^2 + \sigma_{M,b}^2\right)
-#
 # \mathcal{N}\left(\hat{C}_s \mid \mu_{C,b},\ \sigma_{\hat{C}, s}^2 + \sigma_{C,b}^2\right).
-#
 # $$
-#
-#
 #
 # La diferencia con la implementación exacta del artículo es computacional: aquí no muestreamos las asignaciones discretas $b_s$, sino que absorbemos esa suma directamente en el logaritmo de la verosimilitud para poder usar NUTS sobre un ejemplo pequeño.
 #
@@ -100,239 +62,176 @@
 # %% [markdown]
 # ## De $b_s$ explícito a logsumexp
 #
-#
-#
 # Si no queremos muestrear $b_s$ de forma explícita, podemos marginalizarlo. Para una estrella fija:
 #
-#
-#
 # $$
-#
-# p(\hat m_s, \hat C_s \mid d_s, \mathbf f)
-#
-# =
-#
-# \sum_{b=1}^B p(b_s=b \mid \mathbf f)\, p(\hat m_s, \hat C_s \mid d_s, b_s=b).
-#
+# p(\hat m_s, \hat C_s \mid d_s, \mathbf f) = \sum_{b=1}^B p(b_s=b \mid \mathbf f)\, p(\hat m_s, \hat C_s \mid d_s, b_s=b).
 # $$
-#
-#
 #
 # Como $p(b_s=b \mid \mathbf f)=f_b$, queda:
 #
-#
-#
 # $$
-#
-# p(\hat m_s, \hat C_s \mid d_s, \mathbf f)
-#
-# =
-#
-# \sum_{b=1}^B f_b\, p(\hat m_s \mid d_s, b)\, p(\hat C_s \mid b).
-#
+# p(\hat m_s, \hat C_s \mid d_s, \mathbf f) = \sum_{b=1}^B f_b\, p(\hat m_s \mid d_s, b)\, p(\hat C_s \mid b).
 # $$
-#
-#
 #
 # Al pasar a logaritmos no puedes distribuir el logaritmo dentro de una suma. Por eso aparece:
 #
-#
-#
 # $$
-#
-# \log p(\hat m_s, \hat C_s \mid d_s, \mathbf f)
-#
-# =
-#
-# \log \sum_{b=1}^B \exp\Bigl[\log f_b + \log p(\hat m_s \mid d_s, b) + \log p(\hat C_s \mid b)\Bigr].
-#
+# \log p(\hat m_s, \hat C_s \mid d_s, \mathbf f) = \log \sum_{b=1}^B \exp\Bigl[\log f_b + \log p(\hat m_s \mid d_s, b) + \log p(\hat C_s \mid b)\Bigr].
 # $$
-#
-#
 #
 # Numéricamente eso se evalúa con logsumexp, que es una forma estable de calcular:
 #
-#
-#
 # $$
-#
 # \log\sum_b e^{x_b}.
-#
 # $$
-#
-#
 #
 # Entonces, conceptualmente:
 #
-#
-#
 # - con $b_s$ explícito, el modelo es más fácil de leer;
-#
 # - con logsumexp, estás haciendo exactamente la misma marginalización pero a mano.
-#
 
 # %% [markdown]
 # ## Modelo generativo con $b_s$ explícito
 #
-#
-#
 # La forma más clara de pensar el modelo es introducir una variable discreta $b_s$ que indica en qué celda del diagrama color-magnitud cae la estrella $s$.
-#
-#
 #
 # La historia generativa es:
 #
-#
-#
 # 1. Elegir un peso global de mezcla $\mathbf f = (f_1, \dots, f_B)$.
-#
 # 2. Para cada estrella, muestrear una celda
 #
-#
-#
 # $$
-#
 # b_s \sim \mathrm{Categorical}(\mathbf f).
-#
 # $$
-#
-#
 #
 # 3. Condicionado en esa celda, describir magnitud absoluta y color latentes con un kernel gaussiano centrado en la celda:
 #
-#
-#
 # $$
-#
 # M_s \mid b_s \sim \mathcal N(\mu_{M,b_s}, \sigma_{M,b_s}^2),
-#
 # \qquad
-#
 # C_s \mid b_s \sim \mathcal N(\mu_{C,b_s}, \sigma_{C,b_s}^2).
-#
 # $$
-#
-#
 #
 # 4. Relacionar esas variables latentes con los observables mediante distancia $d_s$:
 #
-#
-#
 # $$
-#
 # \hat \varpi_s \mid d_s \sim \mathcal N\left(1000/d_s, \sigma_{\hat\varpi,s}^2\right),
-#
 # $$
 #
-#
-#
 # $$
-#
 # \hat m_s \mid d_s, M_s \sim \mathcal N\left(M_s + 5\log_{10} d_s - 5, \sigma_{\hat m,s}^2\right),
-#
 # $$
 #
-#
-#
 # $$
-#
 # \hat C_s \mid C_s \sim \mathcal N\left(C_s, \sigma_{\hat C,s}^2\right).
-#
 # $$
-#
-#
 #
 # Esta versión es la más fiel al artículo y la más natural para razonar qué papel juega cada variable.
-#
 
 # %%
-from pathlib import Path
 import warnings
+from pathlib import Path
 
 import arviz as az
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import polars as pl
 import pymc as pm
 import pytensor.tensor as pt
 
+from project.utils import DATA_RAW_DIR, MODELS_DIR
+from project.utils.load import load_with_polars
 
 warnings.filterwarnings("ignore", category=UserWarning)
 
 rng = np.random.default_rng(42)
-az.style.use("arviz-whitegrid")
+# az.style.use("arviz-whitegrid")
 plt.rcParams["figure.figsize"] = (7, 5)
+
+# %%
+RAW_FILE = DATA_RAW_DIR / "simulation_data.ecsv"
+
+
+def flux_to_mag_sigma(flux_col: str, flux_error_col: str) -> pl.Expr:
+    snr = pl.col(flux_col) / pl.col(flux_error_col)
+    return (2.5 / np.log(10.0) / snr).cast(pl.Float32)
 
 
 # %%
-ROOT = Path.cwd().resolve().parent
-RAW_FILE = ROOT / "data" / "raw" / "GaiaQuery_804d220beb9e16594a86983e84d0cf43.ecsv"
+def load_simulated_catalog(path: Path) -> pl.DataFrame:
+    df, _ = load_with_polars(path)
+    return (
+        df.select(
+            "source_id",
+            "barycentric_distance",
+            "parallax",
+            "parallax_error",
+            "phot_g_mean_mag",
+            "phot_bp_mean_mag",
+            "phot_rp_mean_mag",
+            "phot_g_mean_flux",
+            "phot_g_mean_flux_error",
+            "phot_bp_mean_flux",
+            "phot_bp_mean_flux_error",
+            "phot_rp_mean_flux",
+            "phot_rp_mean_flux_error",
+            "mag_g",
+            "mag_bp",
+            "mag_rp",
+        )
+        .drop_nans()
+        .drop_nulls()
+        .filter(
+            (pl.col("barycentric_distance") > 0)
+            & (pl.col("parallax_error") > 0)
+            & (pl.col("phot_g_mean_flux") > 0)
+            & (pl.col("phot_bp_mean_flux") > 0)
+            & (pl.col("phot_rp_mean_flux") > 0)
+            & (pl.col("phot_g_mean_flux_error") > 0)
+            & (pl.col("phot_bp_mean_flux_error") > 0)
+            & (pl.col("phot_rp_mean_flux_error") > 0)
+        )
+        .with_columns(
+            (pl.col("phot_bp_mean_mag") - pl.col("phot_rp_mean_mag")).alias(
+                "color_obs"
+            ),
+            flux_to_mag_sigma("phot_g_mean_flux", "phot_g_mean_flux_error").alias(
+                "sigma_g_mag"
+            ),
+            flux_to_mag_sigma("phot_bp_mean_flux", "phot_bp_mean_flux_error").alias(
+                "sigma_bp_mag"
+            ),
+            flux_to_mag_sigma("phot_rp_mean_flux", "phot_rp_mean_flux_error").alias(
+                "sigma_rp_mag"
+            ),
+        )
+        .with_columns(
+            (
+                (pl.col("sigma_bp_mag").pow(2) + pl.col("sigma_rp_mag").pow(2))
+                .sqrt()
+                .alias("sigma_color")
+            ),
+            (pl.col("parallax") / pl.col("parallax_error")).alias("parallax_snr"),
+        )
+    )
 
 
-def flux_to_mag_sigma(flux, flux_error):
-    snr = np.asarray(flux) / np.asarray(flux_error)
-    return 2.5 / np.log(10.0) / snr
-
-
-def load_simulated_catalog(path: Path) -> pd.DataFrame:
-    df = pd.read_csv(path, comment="#", sep=r"\s+")
-    df.columns = [column.lower() for column in df.columns]
-
-    required = [
+catalog = load_simulated_catalog(RAW_FILE).to_pandas()
+catalog[
+    [
+        "source_id",
         "barycentric_distance",
         "parallax",
         "parallax_error",
         "phot_g_mean_mag",
-        "phot_bp_mean_mag",
-        "phot_rp_mean_mag",
-        "phot_g_mean_flux",
-        "phot_g_mean_flux_error",
-        "phot_bp_mean_flux",
-        "phot_bp_mean_flux_error",
-        "phot_rp_mean_flux",
-        "phot_rp_mean_flux_error",
-        "mag_g",
-        "mag_bp",
-        "mag_rp",
+        "color_obs",
+        "sigma_g_mag",
+        "sigma_color",
+        "parallax_snr",
     ]
-
-    df = df.dropna(subset=required).copy()
-
-    positive = (
-        (df["barycentric_distance"] > 0)
-        & (df["parallax_error"] > 0)
-        & (df["phot_g_mean_flux"] > 0)
-        & (df["phot_bp_mean_flux"] > 0)
-        & (df["phot_rp_mean_flux"] > 0)
-        & (df["phot_g_mean_flux_error"] > 0)
-        & (df["phot_bp_mean_flux_error"] > 0)
-        & (df["phot_rp_mean_flux_error"] > 0)
-    )
-
-    df = df.loc[positive].copy()
-
-    df["color_obs"] = df["phot_bp_mean_mag"] - df["phot_rp_mean_mag"]
-    df["sigma_g_mag"] = flux_to_mag_sigma(df["phot_g_mean_flux"], df["phot_g_mean_flux_error"])
-    df["sigma_bp_mag"] = flux_to_mag_sigma(df["phot_bp_mean_flux"], df["phot_bp_mean_flux_error"])
-    df["sigma_rp_mag"] = flux_to_mag_sigma(df["phot_rp_mean_flux"], df["phot_rp_mean_flux_error"])
-    df["sigma_color"] = np.sqrt(df["sigma_bp_mag"] ** 2 + df["sigma_rp_mag"] ** 2)
-    df["parallax_snr"] = df["parallax"] / df["parallax_error"]
-
-    return df
-
-catalog = load_simulated_catalog(RAW_FILE)
-
-catalog[[
-    "source_id",
-    "barycentric_distance",
-    "parallax",
-    "parallax_error",
-    "phot_g_mean_mag",
-    "color_obs",
-    "sigma_g_mag",
-    "sigma_color",
-    "parallax_snr",
-]].head()
+].head()
 
 
 # %%
@@ -351,7 +250,13 @@ def plot_cmd(color, magnitude, *, ax=None, title="CMD observado", alpha=0.35, s=
 
     mask = np.isfinite(color) & np.isfinite(magnitude)
 
-    ax.scatter(np.asarray(color)[mask], np.asarray(magnitude)[mask], s=s, alpha=alpha, edgecolors="none")
+    ax.scatter(
+        np.asarray(color)[mask],
+        np.asarray(magnitude)[mask],
+        s=s,
+        alpha=alpha,
+        edgecolors="none",
+    )
     ax.invert_yaxis()
     ax.set_xlabel("BP - RP")
     ax.set_ylabel(r"$M_G$")
@@ -362,17 +267,35 @@ def plot_cmd(color, magnitude, *, ax=None, title="CMD observado", alpha=0.35, s=
 
 candidate_pool = catalog.loc[catalog["parallax_snr"] > 5].copy()
 sample_size = min(30, len(candidate_pool))
-sample = candidate_pool.sample(n=sample_size, random_state=42).sort_values("parallax_snr").reset_index(drop=True)
+sample = (
+    candidate_pool.sample(n=sample_size, random_state=42)
+    .sort_values("parallax_snr")
+    .reset_index(drop=True)
+)
 
-distance_point = safe_distance_from_parallax(sample["parallax"].to_numpy(), floor_mas=0.05)
-sample["abs_mag_point"] = absolute_mag_from_distance(sample["phot_g_mean_mag"], distance_point)
-sample["abs_mag_true"] = absolute_mag_from_distance(sample["mag_g"], sample["barycentric_distance"])
+distance_point = safe_distance_from_parallax(
+    sample["parallax"].to_numpy(),
+    floor_mas=0.05,
+)
+sample["abs_mag_point"] = absolute_mag_from_distance(
+    sample["phot_g_mean_mag"],
+    distance_point,
+)
+sample["abs_mag_true"] = absolute_mag_from_distance(
+    sample["mag_g"],
+    sample["barycentric_distance"],
+)
 
 print(f"Estrellas disponibles con SNR > 5: {len(candidate_pool)}")
 print(f"Tamano de la muestra usada: {sample_size}")
 
 fig, axes = plt.subplots(1, 2, figsize=(13, 5))
-plot_cmd(sample["color_obs"], sample["abs_mag_point"], ax=axes[0], title="CMD ingenuo con 1/paralaje")
+plot_cmd(
+    sample["color_obs"],
+    sample["abs_mag_point"],
+    ax=axes[0],
+    title="CMD ingenuo con 1/paralaje",
+)
 plot_cmd(
     sample["mag_bp"] - sample["mag_rp"],
     sample["abs_mag_true"],
@@ -387,26 +310,17 @@ plt.tight_layout()
 # %% [markdown]
 # ## Malla fija en el CMD
 #
-#
-#
 # El paper fija un mosaico de kernels gaussianos en el plano $(M, C)$ y aprende solo sus pesos relativos. Aquí hacemos lo mismo sobre una región construida a partir del CMD ingenuo calculado con $1/\hat{\varpi}$.
-#
-#
 #
 # La elección es deliberadamente conservadora:
 #
-#
-#
 # - pocos kernels para que NUTS sea viable en un notebook;
-#
 # - una muestra pequeña de estrellas;
-#
 # - prior uniforme por estrella en un intervalo amplio de distancias, centrado en el inverso de la paralaje observada.
-#
-#
 #
 # Eso no reproduce el Gibbs sampler del artículo, pero sí preserva su estructura probabilística básica.
 #
+
 
 # %%
 def build_cmd_grid(color_values, abs_mag_values, n_color=5, n_abs_mag=7, padding=0.15):
@@ -462,11 +376,18 @@ def prepare_model_data(df: pd.DataFrame, grid: dict) -> dict:
     }
 
 
-grid = build_cmd_grid(sample["color_obs"], sample["abs_mag_point"], n_color=5, n_abs_mag=7)
+grid = build_cmd_grid(
+    sample["color_obs"], sample["abs_mag_point"], n_color=5, n_abs_mag=7
+)
 model_data = prepare_model_data(sample, grid)
 
 fig, ax = plt.subplots(figsize=(7, 5))
-plot_cmd(sample["color_obs"], sample["abs_mag_point"], ax=ax, title="CMD ingenuo con malla fija")
+plot_cmd(
+    sample["color_obs"],
+    sample["abs_mag_point"],
+    ax=ax,
+    title="CMD ingenuo con malla fija",
+)
 
 for edge in model_data["color_edges"]:
     ax.axvline(edge, color="black", alpha=0.15, linewidth=0.8)
@@ -482,40 +403,25 @@ model_data["shape"], len(model_data["mu_abs_mag"])
 # %% [markdown]
 # ## Implementacion Marginalizada En PyMC
 #
-#
-#
 # Esta es la version practica usada en este notebook.
-#
-#
 #
 # No es la formulacion mas pedagogica, pero si una forma directa de usar NUTS en PyMC sin introducir variables discretas dentro del sampler.
 #
-#
-#
 # El modelo computacional usa dos bloques:
-#
-#
 #
 # 1. una verosimilitud gaussiana para la paralaje, con media $1000 / d_s$;
 #
 # 2. una mezcla marginalizada sobre celdas del CMD para magnitud aparente y color.
 #
-#
-#
 # La cantidad clave por estrella es
 #
-#
-#
 # $$
-#
 # \log p(\hat{m}_s, \hat{C}_s \mid d_s, \mathbf{f}) = \operatorname{logsumexp}_b\Bigl[\log f_b + \log p(\hat{m}_s \mid d_s, b) + \log p(\hat{C}_s \mid b)\Bigr].
-#
 # $$
-#
-#
 #
 # Eso evita introducir la variable discreta $b_s$ dentro del sampler. En compensacion, cada evaluacion del log posterior necesita recorrer todas las celdas de la malla.
 #
+
 
 # %%
 def build_base_cmd_model(data: dict) -> pm.Model:
@@ -546,7 +452,9 @@ def build_base_cmd_model(data: dict) -> pm.Model:
             dims="kernel",
         )
 
-        weights = pm.Dirichlet("weights", a=np.ones(data["mu_abs_mag"].size), dims="kernel")
+        weights = pm.Dirichlet(
+            "weights", a=np.ones(data["mu_abs_mag"].size), dims="kernel"
+        )
 
         distance_pc = pm.Uniform(
             "distance_pc",
@@ -568,10 +476,16 @@ def build_base_cmd_model(data: dict) -> pm.Model:
         )
 
         mu_app_mag = mu_abs_mag[None, :] + distance_modulus[:, None]
-        sigma_app_mag = pt.sqrt(sigma_m[:, None] ** 2 + sigma_abs_mag_kernel[None, :] ** 2)
-        sigma_color_total = pt.sqrt(sigma_color[:, None] ** 2 + sigma_color_kernel[None, :] ** 2)
+        sigma_app_mag = pt.sqrt(
+            sigma_m[:, None] ** 2 + sigma_abs_mag_kernel[None, :] ** 2
+        )
+        sigma_color_total = pt.sqrt(
+            sigma_color[:, None] ** 2 + sigma_color_kernel[None, :] ** 2
+        )
 
-        logp_mag = pm.logp(pm.Normal.dist(mu=mu_app_mag, sigma=sigma_app_mag), m_obs[:, None])
+        logp_mag = pm.logp(
+            pm.Normal.dist(mu=mu_app_mag, sigma=sigma_app_mag), m_obs[:, None]
+        )
         logp_color = pm.logp(
             pm.Normal.dist(mu=mu_color[None, :], sigma=sigma_color_total),
             color_obs[:, None],
@@ -611,7 +525,11 @@ distance_summary.head(10)
 
 # %%
 posterior_distance = idata.posterior["distance_pc"].mean(("chain", "draw")).values
-posterior_weights = idata.posterior["weights"].mean(("chain", "draw")).values.reshape(model_data["shape"])
+posterior_weights = (
+    idata.posterior["weights"]
+    .mean(("chain", "draw"))
+    .values.reshape(model_data["shape"])
+)
 parallax_only = model_data["distance_init"]
 true_distance = sample["barycentric_distance"].to_numpy()
 
@@ -661,25 +579,15 @@ print(f"RMSE modelo jerárquico: {rmse(posterior_distance, true_distance):.1f} p
 # %% [markdown]
 # ## Guardar Resultados
 #
-#
-#
 # Este notebook guarda dos artefactos en models/:
 #
-#
-#
 # - un archivo NetCDF con las muestras del posterior en formato ArviZ;
-#
 # - un archivo NPZ con los arreglos necesarios para comparar backends en otro notebook.
 #
 
 # %%
-RESULTS_DIR = ROOT / "models"
-RESULTS_DIR.mkdir(exist_ok=True)
-
-
-PYMC_IDATA_PATH = RESULTS_DIR / "pymc_base_model.nc"
-PYMC_RESULTS_PATH = RESULTS_DIR / "pymc_base_model_results.npz"
-
+PYMC_IDATA_PATH = MODELS_DIR / "pymc_base_model.nc"
+PYMC_RESULTS_PATH = MODELS_DIR / "pymc_base_model_results.npz"
 
 idata.to_netcdf(PYMC_IDATA_PATH)
 
@@ -695,7 +603,5 @@ np.savez(
     rmse=rmse(posterior_distance, true_distance),
 )
 
-
 print(f"Posterior PyMC guardado en: {PYMC_IDATA_PATH}")
 print(f"Resumen PyMC guardado en: {PYMC_RESULTS_PATH}")
-

@@ -32,3 +32,4 @@ models/**/*.csv
 models/**/*.npz
 reports/sources/
 .ipynb_checkpoints
+*.egg-info
