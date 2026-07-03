@@ -17,10 +17,12 @@
 # # 2.1 Modelo Base Con NumPyro
 #
 #
+# > Estado: notebook exploratorio. La formulacion que se conserva para el
+# > experimento final es la marginalizada con `logsumexp`. La enumerada y la
+# > relajada quedan como comparaciones computacionales, no como resultados
+# > principales.
 #
 # Este notebook implementa el mismo modelo base del notebook 2.0, pero usando NumPyro con enumeracion de la variable discreta $b_s$.
-#
-#
 #
 # El objetivo es que la formulacion del modelo sea facil de explicar y que los resultados queden guardados para compararlos en otro notebook.
 #

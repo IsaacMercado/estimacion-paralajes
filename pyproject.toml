@@ -38,6 +38,7 @@ full = [
     "numpyro",
     "h5netcdf",
     "h5py",
+    "blackjax",
 ]
 
 [tool.setuptools.packages.find]

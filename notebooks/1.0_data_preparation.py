@@ -113,7 +113,7 @@ table = query_data(
 )
 
 # %%
-sample = table.to_pandas().dropna().sample(100_000)
+sample = table.to_pandas().dropna().sample(100_000, random_state=42)
 color = sample["mag_bp"] - sample["mag_rp"]
 mag = sample["mag_g"] - 5.0 * np.log10(sample["barycentric_distance"] * 1e3) + 5.0
 
@@ -121,9 +121,9 @@ mag = sample["mag_g"] - 5.0 * np.log10(sample["barycentric_distance"] * 1e3) + 5
 plot_cmd(
     color,
     mag,
-    color_label="B - V",
-    mag_label="V (mag)",
-    title="Diagrama color-magnitud (Hipparcos)",
+    color_label="BP - RP",
+    mag_label=r"$M_G$ (mag)",
+    title="Diagrama color-magnitud (simulación Gaia)",
 )
 plt.show()
 

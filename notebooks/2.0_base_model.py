@@ -16,6 +16,11 @@
 # %% [markdown]
 # # 2.0 Modelo Base Jerarquico Para Paralajes
 #
+# > Estado: notebook exploratorio. No usar estas corridas como resultados finales
+# > del Capitulo IV. El experimento final debe partir de `3.0_experimento_principal.py`,
+# > con prior de distancia uniforme global, grilla fija independiente y muestras
+# > mucho mayores.
+#
 # Este notebook traduce a codigo una version base del modelo de Leistedt et al. para combinar paralajes y fotometria con un prior jerarquico en el diagrama color-magnitud.
 #
 # La idea central del articulo es:

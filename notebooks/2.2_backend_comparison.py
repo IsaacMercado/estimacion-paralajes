@@ -16,6 +16,10 @@
 # %% [markdown]
 # # 2.2 Comparacion Entre PyMC Y Variantes De NumPyro
 #
+# > Estado: comparacion exploratoria de backends. No usar la tabla de RMSE de
+# > este notebook como evidencia final; las muestras son pequenas y provienen de
+# > notebooks exploratorios. El Capitulo IV debe usar el flujo 3.0.
+#
 # Este notebook carga los resultados guardados por los notebooks 2.0 y 2.1 para comparar PyMC con varias formulaciones de NumPyro usando exactamente la misma muestra y la misma malla del CMD.
 
 # %%
@@ -235,8 +239,8 @@ def summarize_weight_means(idata, label, use_arviz=True):
     summary = pd.DataFrame({
         "mean": weights.mean(axis=0),
         "sd": weights.std(axis=0),
-        "hdi_3%": np.quantile(weights, 0.03, axis=0),
-        "hdi_97%": np.quantile(weights, 0.97, axis=0),
+        "q03": np.quantile(weights, 0.03, axis=0),
+        "q97": np.quantile(weights, 0.97, axis=0),
     })
     display(summary.head().round(3))
 
