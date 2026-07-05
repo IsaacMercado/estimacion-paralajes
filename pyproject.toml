@@ -12,7 +12,8 @@ dependencies = []
 
 [project.optional-dependencies]
 colab = [
-    "numpyro"
+    "numpyro",
+    "astroquery",
 ]
 full = [
     "arviz",
