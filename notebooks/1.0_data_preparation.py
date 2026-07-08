@@ -14,7 +14,7 @@
 # ---
 
 # %%
-# !pip install git+https://github.com/IsaacMercado/estimacion-paralajes.git#egg=project[colab]
+# !pip install "project[colab] @ git+https://github.com/IsaacMercado/estimacion-paralajes.git"
 
 # %%
 import matplotlib.pyplot as plt

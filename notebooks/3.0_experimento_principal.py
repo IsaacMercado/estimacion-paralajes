@@ -44,6 +44,14 @@
 # `jax[cpu]`.
 
 # %%
+import jax
+print('Devices:', jax.devices())
+print('Backend:', jax.default_backend())
+
+# %%
+# !pip install "project[colab] @ git+https://github.com/IsaacMercado/estimacion-paralajes.git"
+
+# %%
 from pathlib import Path
 
 import arviz as az
@@ -53,6 +61,7 @@ import numpy as np
 import numpyro
 import numpyro.distributions as dist
 import pandas as pd
+import polars as pl
 
 from jax import random
 from jax.scipy.special import logsumexp
@@ -61,18 +70,14 @@ from numpyro.infer.autoguide import AutoLowRankMultivariateNormal
 from numpyro.optim import Adam
 
 from project.validation import evaluate_distance_posterior, summarize_elbo
+from project.utils import DATA_RAW_DIR
+from project.utils.load import load_with_polars
 
 jax.config.update("jax_enable_x64", True)
 
 # %%
-ROOT = Path.cwd().resolve().parent
-DATA_DIR = ROOT / "data"
-MODELS_DIR = ROOT / "models"
-MODELS_DIR.mkdir(exist_ok=True)
-
-SIMULATION_FILE = DATA_DIR / "raw" / "GaiaQuery_804d220beb9e16594a86983e84d0cf43.ecsv"
+SIMULATION_FILE = DATA_RAW_DIR / "simulation_data.ecsv"
 SEED = 2026
-
 
 # %% [markdown]
 # ## Preparación de datos
@@ -82,65 +87,78 @@ SEED = 2026
 # mismo orden.
 
 # %%
-def flux_to_mag_sigma(flux, flux_error):
-    flux = np.asarray(flux, dtype=float)
-    flux_error = np.asarray(flux_error, dtype=float)
-    return 2.5 / np.log(10.0) * flux_error / flux
+
+# %%
+# def flux_to_mag_sigma(flux, flux_error):
+#     flux = np.asarray(flux, dtype=float)
+#     flux_error = np.asarray(flux_error, dtype=float)
+#     return 2.5 / np.log(10.0) * flux_error / flux
 
 
-def load_simulated_catalog(path: Path) -> pd.DataFrame:
-    df = pd.read_csv(path, comment="#", sep=r"\s+")
-    df.columns = [column.lower() for column in df.columns]
+def flux_to_mag_sigma(flux_col: str, flux_error_col: str) -> pl.Expr:
+    snr = pl.col(flux_col) / pl.col(flux_error_col)
+    return (2.5 / np.log(10.0) / snr).cast(pl.Float32)
 
-    required = [
-        "source_id",
-        "barycentric_distance",
-        "parallax",
-        "parallax_error",
-        "phot_g_mean_mag",
-        "phot_bp_mean_mag",
-        "phot_rp_mean_mag",
-        "phot_g_mean_flux",
-        "phot_g_mean_flux_error",
-        "phot_bp_mean_flux",
-        "phot_bp_mean_flux_error",
-        "phot_rp_mean_flux",
-        "phot_rp_mean_flux_error",
-    ]
-    df = df.dropna(subset=required).copy()
 
-    quality = (
-        (df["barycentric_distance"] > 0)
-        & (df["parallax_error"] > 0)
-        & (df["phot_g_mean_flux"] > 0)
-        & (df["phot_bp_mean_flux"] > 0)
-        & (df["phot_rp_mean_flux"] > 0)
-        & (df["phot_g_mean_flux_error"] > 0)
-        & (df["phot_bp_mean_flux_error"] > 0)
-        & (df["phot_rp_mean_flux_error"] > 0)
+def load_simulated_catalog(path: Path) -> pl.DataFrame:
+    df, columns = load_with_polars(path)
+    return (
+        df.select(
+            "source_id",
+            "barycentric_distance",
+            "parallax",
+            "parallax_error",
+            "phot_g_mean_mag",
+            "phot_bp_mean_mag",
+            "phot_rp_mean_mag",
+            "phot_g_mean_flux",
+            "phot_g_mean_flux_error",
+            "phot_bp_mean_flux",
+            "phot_bp_mean_flux_error",
+            "phot_rp_mean_flux",
+            "phot_rp_mean_flux_error",
+        )
+        .drop_nans()
+        .drop_nulls()
+        .filter(
+            (pl.col("barycentric_distance") > 0)
+            & (pl.col("parallax_error") > 0)
+            & (pl.col("phot_g_mean_flux") > 0)
+            & (pl.col("phot_bp_mean_flux") > 0)
+            & (pl.col("phot_rp_mean_flux") > 0)
+            & (pl.col("phot_g_mean_flux_error") > 0)
+            & (pl.col("phot_bp_mean_flux_error") > 0)
+            & (pl.col("phot_rp_mean_flux_error") > 0)
+        )
+        .with_columns(
+            (pl.col("parallax") / pl.col("parallax_error")).alias("parallax_snr"),
+            (pl.col("phot_bp_mean_mag") - pl.col("phot_rp_mean_mag")).alias("color_obs"),
+        )
+        .with_columns(
+            flux_to_mag_sigma("phot_g_mean_flux", "phot_g_mean_flux_error").alias("sigma_g_mag"),
+            flux_to_mag_sigma("phot_bp_mean_flux", "phot_bp_mean_flux_error").alias("sigma_bp_mag"),
+            flux_to_mag_sigma("phot_rp_mean_flux", "phot_rp_mean_flux_error").alias("sigma_rp_mag"),
+        )
+        .with_columns(
+            (
+                (pl.col("sigma_bp_mag").pow(2) + pl.col("sigma_rp_mag").pow(2))
+                .sqrt()
+                .alias("sigma_color")
+            ),
+        )
     )
-    df = df.loc[quality].copy()
-
-    df["color_obs"] = df["phot_bp_mean_mag"] - df["phot_rp_mean_mag"]
-    df["sigma_g_mag"] = flux_to_mag_sigma(df["phot_g_mean_flux"], df["phot_g_mean_flux_error"])
-    df["sigma_bp_mag"] = flux_to_mag_sigma(df["phot_bp_mean_flux"], df["phot_bp_mean_flux_error"])
-    df["sigma_rp_mag"] = flux_to_mag_sigma(df["phot_rp_mean_flux"], df["phot_rp_mean_flux_error"])
-    df["sigma_color"] = np.sqrt(df["sigma_bp_mag"] ** 2 + df["sigma_rp_mag"] ** 2)
-    df["parallax_snr"] = df["parallax"] / df["parallax_error"]
-    return df
 
 
-def select_simulation_sample(df: pd.DataFrame, n_stars: int, seed: int) -> pd.DataFrame:
-    cuts = (
-        (df["parallax_snr"] > 1.0)
-        & (df["phot_g_mean_flux"] / df["phot_g_mean_flux_error"] > 50)
-        & (df["phot_bp_mean_flux"] / df["phot_bp_mean_flux_error"] > 20)
-        & (df["phot_rp_mean_flux"] / df["phot_rp_mean_flux_error"] > 20)
+def select_simulation_sample(df: pl.DataFrame, n_stars: int, seed: int) -> pd.DataFrame:
+    pool = df.filter(
+        (pl.col("parallax_snr") > 1.0)
+        & ((pl.col("phot_g_mean_flux") / pl.col("phot_g_mean_flux_error")) > 50.0)
+        & ((pl.col("phot_bp_mean_flux") / pl.col("phot_bp_mean_flux_error")) > 20.0)
+        & ((pl.col("phot_rp_mean_flux") / pl.col("phot_rp_mean_flux_error")) > 20.0)
     )
-    pool = df.loc[cuts].copy()
-    if len(pool) > n_stars:
-        pool = pool.sample(n=n_stars, random_state=seed)
-    return pool.sort_values("source_id").reset_index(drop=True)
+    if pool.height > n_stars:
+        pool = pool.sample(n=n_stars, seed=seed)
+    return pool.sort("source_id")
 
 
 # %% [markdown]
@@ -176,12 +194,12 @@ def build_fixed_cmd_grid(
 
 def prepare_model_data(df: pd.DataFrame, grid: dict, r_min=10.0, r_max=20_000.0) -> dict:
     return {
-        "parallax": df["parallax"].to_numpy(dtype=float),
-        "parallax_error": df["parallax_error"].to_numpy(dtype=float),
-        "m_obs": df["phot_g_mean_mag"].to_numpy(dtype=float),
-        "sigma_m": df["sigma_g_mag"].to_numpy(dtype=float),
-        "color_obs": df["color_obs"].to_numpy(dtype=float),
-        "sigma_color": df["sigma_color"].to_numpy(dtype=float),
+        "parallax": df["parallax"].to_jax(),
+        "parallax_error": df["parallax_error"].to_jax(),
+        "m_obs": df["phot_g_mean_mag"].to_jax(),
+        "sigma_m": df["sigma_g_mag"].to_jax(),
+        "color_obs": df["color_obs"].to_jax(),
+        "sigma_color": df["sigma_color"].to_jax(),
         "r_min": float(r_min),
         "r_max": float(r_max),
         **grid,
@@ -267,12 +285,15 @@ def run_vi(model, model_data, *, seed, steps=20_000, lr=0.01, rank=25, samples=4
 # Descomentar y ajustar `N_STARS` cuando se ejecute en Colab.
 
 # %%
-# N_STARS = 10_000
-# catalog = load_simulated_catalog(SIMULATION_FILE)
-# sample = select_simulation_sample(catalog, n_stars=N_STARS, seed=SEED)
-# grid = build_fixed_cmd_grid(n_color=25, n_abs_mag=35)
-# model_data_np = prepare_model_data(sample, grid, r_min=10.0, r_max=20_000.0)
-# model_data = {key: jnp.asarray(value) if isinstance(value, np.ndarray) else value for key, value in model_data_np.items()}
+N_STARS = 10_000
+catalog = load_simulated_catalog(SIMULATION_FILE)
+sample = select_simulation_sample(catalog, n_stars=N_STARS, seed=SEED)
+grid = build_fixed_cmd_grid(n_color=25, n_abs_mag=35)
+model_data_np = prepare_model_data(sample, grid, r_min=10.0, r_max=20_000.0)
+model_data = {key: jnp.asarray(value) if isinstance(value, np.ndarray) else value for key, value in model_data_np.items()}
+
+# %%
+vi0, idata0 = run_vi(model_0_parallax_only, model_data, seed=SEED)
 
 # %%
 # vi1, idata1 = run_vi(model_1_cmd_marginalized, model_data, seed=SEED + 10)
