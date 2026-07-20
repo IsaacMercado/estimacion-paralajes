@@ -20,6 +20,7 @@ reports/*.pdf
 data/raw/*.vot
 data/raw/*.csv.gz
 data/raw/*.ecsv
+data/raw/*.csv
 tmp
 
 # pixi environments
@@ -33,3 +34,4 @@ models/**/*.npz
 reports/sources/
 .ipynb_checkpoints
 *.egg-info
+.jupyter

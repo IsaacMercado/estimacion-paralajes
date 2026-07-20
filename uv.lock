@@ -2782,6 +2782,7 @@ source = { editable = "." }
 
 [package.optional-dependencies]
 colab = [
+    { name = "astroquery" },
     { name = "numpyro" },
 ]
 full = [
@@ -2823,6 +2824,7 @@ dev = [
 requires-dist = [
     { name = "arviz", marker = "extra == 'full'" },
     { name = "astropy", marker = "extra == 'full'" },
+    { name = "astroquery", marker = "extra == 'colab'" },
     { name = "astroquery", extras = ["all"], marker = "extra == 'full'" },
     { name = "blackjax", marker = "extra == 'full'" },
     { name = "funsor", marker = "extra == 'full'" },

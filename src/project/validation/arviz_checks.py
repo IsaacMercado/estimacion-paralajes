@@ -114,6 +114,7 @@ def evaluate_distance_posterior(
     idata: az.InferenceData,
     true_distance_pc: Iterable[float],
     variable: str = "distance_pc",
+    point_estimator: str = "mean",
 ) -> SimulationMetrics:
     """Evaluate distance posterior quality on simulations with known truth.
 
@@ -124,13 +125,18 @@ def evaluate_distance_posterior(
 
     truth = np.asarray(true_distance_pc, dtype=float)
     samples = _flatten_chain_draw(_posterior_array(idata, variable))
-    posterior_mean = np.mean(samples, axis=0)
-    if truth.shape != posterior_mean.shape:
+    if point_estimator == "mean":
+        posterior_point = np.mean(samples, axis=0)
+    elif point_estimator == "median":
+        posterior_point = np.median(samples, axis=0)
+    else:
+        raise ValueError(f"Unknown point_estimator: {point_estimator!r}; use 'mean' or 'median'.")
+    if truth.shape != posterior_point.shape:
         raise ValueError(
-            f"truth shape {truth.shape} does not match posterior item shape {posterior_mean.shape}."
+            f"truth shape {truth.shape} does not match posterior item shape {posterior_point.shape}."
         )
 
-    error = posterior_mean - truth
+    error = posterior_point - truth
     lower_68, upper_68 = posterior_interval(idata, variable=variable, prob=0.68)
     lower_95, upper_95 = posterior_interval(idata, variable=variable, prob=0.95)
     width_68 = upper_68 - lower_68
